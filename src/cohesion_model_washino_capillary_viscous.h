@@ -212,7 +212,7 @@ namespace ContactModels {
           {
               const double volL1000 = /* 2*4/3 * 1000 */ 2666.666666*M_PI*max_rad*max_rad*max_rad*maxLiquidContent[i];
               const double volBond1000 = (volL1000)*volumeFraction;
-              const double contactAngleI = 0.5 * contactAngle[i] * contactAngle[i];
+              const double contactAngleI = contactAngle[i];
               const double distMax = (1. + 0.5*contactAngleI) * cbrt(volBond1000) * 0.1 /* 0.1*cbrt(1000)=1 */;
               max_dist_ratio = fmax(0.5*distMax/min_rad, max_dist_ratio); 
           }
@@ -269,7 +269,7 @@ namespace ContactModels {
       if(volBond1000 < 1e-14) return;
 
       const double rEff = radi*radj / (radi+radj);
-      const double contactAngleEff = 0.5 * contactAngle[itype] * contactAngle[jtype];
+      const double contactAngleEff = 0.5 * (contactAngle[itype] + contactAngle[jtype]);
 
       // capilar force
       // this is from Rabinovich et al., Langmiur, 21 (2005), 10992-10997 - Eqn. A11
@@ -365,7 +365,7 @@ namespace ContactModels {
       const double volBond1000 = (volLi1000+volLj1000)*volumeFraction;
 
       const double rEff = radi*radj / (radi+radj);
-      const double contactAngleEff = 0.5 * contactAngle[itype] * contactAngle[jtype];
+      const double contactAngleEff = 0.5 * (contactAngle[itype] + contactAngle[jtype]);
       const double distMax = (1. + 0.5*contactAngleEff) * cbrt(volBond1000) * 0.1 /* 0.1*cbrt(1000)=1 */;
 
       // check if liquid bridge exists
