@@ -121,7 +121,7 @@ void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::calcVolPropertiesOfNewE
     vectorConstruct3D(f0,0,1,2);
     vectorConstruct3D(f1,0,3,1);
     vectorConstruct3D(f2,0,2,3);
-    vectorConstruct3D(f1,1,3,2);
+    vectorConstruct3D(f3,1,3,2);
     faceNodes_.set(n,0,f0);
     faceNodes_.set(n,1,f1);
     faceNodes_.set(n,2,f2);
