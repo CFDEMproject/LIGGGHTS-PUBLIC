@@ -1,24 +1,28 @@
 PROJECT(LIGGGHTS C CXX)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5.0)
 
 SET(LIGGGHTS_MAJOR_VERSION 3)
-SET(LIGGGHTS_MINOR_VERSION 7)
+SET(LIGGGHTS_MINOR_VERSION 8)
 SET(LIGGGHTS_PATCH_VERSION 0)
 SET(LIGGGHTS_VERSION ${LIGGGHTS_MAJOR_VERSION}.${LIGGGHTS_MINOR_VERSION}.${LIGGGHTS_PATCH_VERSION})
 
+IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
+  SET(CMAKE_CXX_STANDARD 14)
+ELSE()
+  SET(CMAKE_CXX_STANDARD 17)
+ENDIF()
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 IF (NOT CMAKE_CXX_FLAGS)
   IF(CMAKE_COMPILER_IS_GNUCXX)
-    SET(CMAKE_CXX_FLAGS "-O2 -funroll-loops -fstrict-aliasing -Wall -Wno-uninitialized -std=c++11 -Wno-literal-suffix -fPIC")
+    SET(CMAKE_CXX_FLAGS "-O2 -funroll-loops -fstrict-aliasing -Wall -Wextra -Wno-uninitialized -Wno-literal-suffix -fPIC")
   ENDIF()
 ENDIF()
 
 FILE(GLOB SOURCES *.cpp)
 FILE(GLOB HEADERS *.h)
 
-#LIST(REMOVE_ITEM SOURCES main.cpp)
-
 IF(WIN32)
-  #include (GenerateExportHeader)
   INCLUDE_DIRECTORIES(WINDOWS/extra)
   ADD_DEFINITIONS(-D_USE_MATH_DEFINES -DNOMINMAX)
 
@@ -55,8 +59,6 @@ ADD_LIBRARY(liggghts_shared SHARED $<TARGET_OBJECTS:liggghts_obj>)
 SET_TARGET_PROPERTIES(liggghts_shared PROPERTIES OUTPUT_NAME liggghts)
 SET_PROPERTY(TARGET liggghts_shared PROPERTY PUBLIC_HEADER ${HEADERS})
 
-#ADD_EXECUTABLE(liggghts_bin main.cpp)
-#TARGET_LINK_LIBRARIES(liggghts_bin liggghts)
 ADD_EXECUTABLE(liggghts_bin $<TARGET_OBJECTS:liggghts_obj>)
 SET_TARGET_PROPERTIES(liggghts_bin PROPERTIES OUTPUT_NAME liggghts)
 
@@ -70,9 +72,9 @@ IF(VTK_FOUND)
   TARGET_LINK_LIBRARIES(liggghts_static ${VTK_LIBRARIES})
   TARGET_LINK_LIBRARIES(liggghts_shared ${VTK_LIBRARIES})
   TARGET_LINK_LIBRARIES(liggghts_bin ${VTK_LIBRARIES})
-  MESSAGE(STATUS "Found VTK")
+  MESSAGE(STATUS "Found VTK: version " ${VTK_VERSION})
 ELSE(VTK_FOUND)
-  MESSAGE(STATUS "VTK NOT found!")
+  MESSAGE(WARNING "VTK NOT found!")
 ENDIF(VTK_FOUND)
 
 #=======================================
@@ -86,7 +88,7 @@ IF(JPEG_FOUND)
   TARGET_LINK_LIBRARIES(liggghts_shared jpeg)
   TARGET_LINK_LIBRARIES(liggghts_bin jpeg)
 ELSE(JPEG_FOUND)
-  MESSAGE(STATUS "JPEG NOT found!")
+  MESSAGE(WARNING "JPEG NOT found!")
 ENDIF(JPEG_FOUND)
 
 #=======================================
@@ -111,7 +113,7 @@ IF(MPI_FOUND)
     SET_TARGET_PROPERTIES(liggghts_bin PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
   ENDIF()
 ELSE(MPI_FOUND)
-  MESSAGE(STATUS "MPI NOT found! Using MPI Stubs instead.")
+  MESSAGE(WARNING "MPI NOT found! Using MPI Stubs instead.")
   ADD_SUBDIRECTORY(STUBS)
   TARGET_LINK_LIBRARIES(liggghts_static mpi_stubs)
   TARGET_LINK_LIBRARIES(liggghts_shared mpi_stubs)
@@ -120,19 +122,11 @@ ENDIF(MPI_FOUND)
 
 #=======================================
 
-#install(TARGETS liggghts liggghts_bin
-#        RUNTIME DESTINATION bin
-#        LIBRARY DESTINATION lib)
-
-#install(TARGETS liggghts_bin
-#        RUNTIME DESTINATION bin
-#        LIBRARY DESTINATION lib)
-
-install(TARGETS liggghts_bin liggghts_static liggghts_shared
+INSTALL(TARGETS liggghts_bin liggghts_static liggghts_shared
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
 IF (WIN32)
-    install(DIRECTORY WINDOWS DESTINATION include)
+    INSTALL(DIRECTORY WINDOWS DESTINATION include)
 ENDIF()
