@@ -16,9 +16,6 @@ SET(LIGGGHTS_VERSION ${LIGGGHTS_MAJOR_VERSION}.${LIGGGHTS_MINOR_VERSION}.${LIGGG
 # -DPACK_POINTER
 # -DPACK_MEMCPY
 
-# TODO:
-# generate models from cmake like: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
-
 #=======================================
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cMake")
 INCLUDE(Version)
@@ -147,7 +144,7 @@ ENDIF()
 
 #=======================================
 SCAN_STYLES()
-GEN_STYLES()
+GENERATE_STYLES()
 
 #=======================================
 IF(ENABLE_HERTZ)
@@ -475,7 +472,6 @@ ENDIF()
 
 #=======================================
 
-# FIXME: gets overwritten 
 GENERATE_VERSION_H()
 
 #=======================================

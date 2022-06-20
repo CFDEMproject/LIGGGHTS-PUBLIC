@@ -83,7 +83,7 @@ MACRO(GEN_STYLE styleName)
 	ENDFOREACH()
 ENDMACRO()
 
-MACRO(GEN_STYLES)
+MACRO(GENERATE_STYLES)
     # Generate all style files
     GEN_STYLE(angle)
     GEN_STYLE(atom)
