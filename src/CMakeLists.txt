@@ -17,7 +17,7 @@ SET(LIGGGHTS_VERSION ${LIGGGHTS_MAJOR_VERSION}.${LIGGGHTS_MINOR_VERSION}.${LIGGG
 # -DPACK_MEMCPY
 
 # TODO:
-# generate models
+# generate models from cmake like: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
 
 SET(ENABLED_OPTIONS "")
 SET(DISABLED_OPTIONS "")
@@ -54,6 +54,13 @@ OPTION(ENABLE_LONGLONG_TO_LONG "System does not recognize “long long” data t
 
 #=======================================
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
+    SET(CMAKE_CXX_STANDARD 14)
+  ELSE()
+    SET(CMAKE_CXX_STANDARD 17)
+  ENDIF()
+  SET(CMAKE_CXX_STANDARD_REQUIRED ON)  
+
   SET(OPT_CXX_FLAGS "")
   MESSAGE(STATUS "Compiler: clang")
 ELSEIF(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
@@ -73,7 +80,7 @@ ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   SET(OPT_CXX_FLAGS "/O2 /bigobj")
 
   ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES -DNOMINMAX)
-  ADD_DEFINITIONS( "/wd4101 /wd4244 /wd4267" )
+  ADD_DEFINITIONS("/wd4101 /wd4244 /wd4267")
 
   MESSAGE(STATUS "Compiler: msvc")
 ENDIF()
@@ -301,6 +308,22 @@ IF(ENABLE_LONGLONG_TO_LONG)
 ENDIF()
 
 #=======================================
+
+# FIXME: gets overwritten 
+STRING(TIMESTAMP BUILD_TIME "%Y-%m-%d %H:%M:%S")
+EXECUTE_PROCESS(
+  COMMAND git log -1 --format=%H
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  OUTPUT_VARIABLE GIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+FILE(WRITE version_liggghts.h
+  "#define LIGGGHTS_VERSION \"LIGGGHTS-PUBLIC ${LIGGGHTS_VERSION}, "
+  "compiled ${BUILD_TIME} by $ENV{USER}, git commit ${GIT_HASH}, "
+  "build configuration: ${ENABLED_OPTIONS}\""
+)
+
+#=======================================
 MESSAGE(STATUS "=======================================")
 MESSAGE(STATUS "liggghts ${LIGGGHTS_VERSION}")
 MESSAGE(STATUS "Enabled options: ${ENABLED_OPTIONS}")
@@ -309,10 +332,10 @@ MESSAGE(STATUS "=======================================")
 
 #=======================================
 INSTALL(TARGETS liggghts_bin liggghts_static liggghts_shared
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include)
 IF (WIN32)
-    INSTALL(DIRECTORY WINDOWS DESTINATION include)
+  INSTALL(DIRECTORY WINDOWS DESTINATION include)
 ENDIF()
