@@ -143,10 +143,14 @@ IF(WIN32)
 ENDIF()
 
 #=======================================
+# based on: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
+
 SCAN_STYLES()
 GENERATE_STYLES()
 
 #=======================================
+# based on: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
+
 IF(ENABLE_HERTZ)
   ADD_CONTACT_MODEL("HERTZ" "" "" "" "" "")
   SET(ENABLED_MODELS "${ENABLED_MODELS} HERTZ")

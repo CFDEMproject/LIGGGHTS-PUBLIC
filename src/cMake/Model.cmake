@@ -1,3 +1,5 @@
+# based on: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
+
 INCLUDE(Macros)
 
 MACRO(WRITE_WHITELIST)

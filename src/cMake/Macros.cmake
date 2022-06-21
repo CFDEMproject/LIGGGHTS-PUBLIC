@@ -1,3 +1,5 @@
+# based on: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
+
 MACRO(GET_SUBDIRS retval filename)
 	FILE(GLOB file-list RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */${filename})
 
