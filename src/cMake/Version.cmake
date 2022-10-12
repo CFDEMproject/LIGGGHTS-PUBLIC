@@ -1,0 +1,28 @@
+INCLUDE(Macros)
+
+MACRO(GENERATE_VERSION_H)
+    GETDATETIME(BUILD_TIME "%Y-%m-%d %H:%M:%S")
+
+    EXECUTE_PROCESS(
+      COMMAND git log -1 --format=%H
+      WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+      OUTPUT_VARIABLE GIT_HASH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    EXECUTE_PROCESS(
+      COMMAND whoami
+      WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+      OUTPUT_VARIABLE USER
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    STRING(STRIP ${USER} USER)
+    STRING(REPLACE "\\" "\\\\" USER ${USER})
+
+    FILE(WRITE version_liggghts.h
+      "#define LIGGGHTS_VERSION \"LIGGGHTS-PUBLIC ${LIGGGHTS_VERSION}, "
+      "compiled ${BUILD_TIME} by ${USER}, git commit ${GIT_HASH}, "
+      "build configuration:${ENABLED_OPTIONS}, "
+      "models:${ENABLED_MODELS}\""
+    )
+ENDMACRO()

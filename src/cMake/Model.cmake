@@ -1,0 +1,45 @@
+# based on: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
+
+INCLUDE(Macros)
+
+MACRO(WRITE_WHITELIST)
+    SET(fileName ${CMAKE_CURRENT_SOURCE_DIR}/style_contact_model.h)
+    # Create File
+    GETDATETIME(NOW "%Y-%m-%d %H:%M:%S")
+    FILE(WRITE ${fileName} "/* created on ${NOW} */\n")
+
+    GET_PROPERTY(normal_models_local GLOBAL PROPERTY normal_models)
+    GET_PROPERTY(tangential_models_local GLOBAL PROPERTY tangential_models)
+    GET_PROPERTY(cohesion_models_local GLOBAL PROPERTY cohesion_models)
+    GET_PROPERTY(rolling_models_local GLOBAL PROPERTY rolling_models)
+    GET_PROPERTY(surface_models_local GLOBAL PROPERTY surface_models)
+
+    SET(N 0)
+    FOREACH(nm ${normal_models_local})
+        FOREACH(tm ${tangential_models_local})
+            FOREACH(cm ${cohesion_models_local})
+                FOREACH(rm ${rolling_models_local})
+                    FOREACH(sm ${surface_models_local}) 
+                        MATH(EXPR N "${N}+1")
+                        FILE(APPEND ${fileName} "GRAN_MODEL(${nm}, ${tm}, ${cm}, ${rm}, ${sm})\n")
+                    ENDFOREACH()
+                ENDFOREACH()
+            ENDFOREACH()
+        ENDFOREACH()
+    ENDFOREACH()
+    MESSAGE(STATUS "There are ${N} contact model combinations")
+ENDMACRO()
+
+MACRO(ADD_CONTACT_MODEL normal_model tangential_model cohesion_model rolling_model surface_model)
+    GET_PROPERTY(normal_models_local GLOBAL PROPERTY normal_models)
+    GET_PROPERTY(tangential_models_local GLOBAL PROPERTY tangential_models)
+    GET_PROPERTY(cohesion_models_local GLOBAL PROPERTY cohesion_models) 
+    GET_PROPERTY(rolling_models_local GLOBAL PROPERTY rolling_models)
+    GET_PROPERTY(surface_models_local GLOBAL PROPERTY surface_models)
+ 
+    SET_PROPERTY(GLOBAL PROPERTY normal_models "${normal_models_local}" "${normal_model}")
+    SET_PROPERTY(GLOBAL PROPERTY tangential_models "${tangential_models_local}" "${tangential_model}")
+    SET_PROPERTY(GLOBAL PROPERTY cohesion_models "${cohesion_models_local}" "${cohesion_model}")
+    SET_PROPERTY(GLOBAL PROPERTY rolling_models "${rolling_models_local}" "${rolling_model}")
+    SET_PROPERTY(GLOBAL PROPERTY surface_models "${surface_models_local}" "${surface_model}")
+ENDMACRO()

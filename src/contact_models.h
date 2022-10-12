@@ -359,6 +359,7 @@ public:
                 "\tIn order to optimize this model you have the following options:\n"
                 "\t\t(i)  Run the genAutoExamplesWhitelist.sh script in your LIGGGHTS(R) source folder to automatically parse the input script\n"
                 "\t\t(ii) Add the model combination by hand to your style_contact_model_user.whitelist that can be found in your LIGGGHTS(R) source folder\n"
+                "\t\t(iii) Use the ENABLE_MODEL_* flag when building with cmake.\n"
                 "\tIf you perform one of the steps above LIGGGHTS(R) needs to be recompiled to generate the optimized code.\n\n"
             );
             lmp->error->warning(FLERR, warning.c_str());
