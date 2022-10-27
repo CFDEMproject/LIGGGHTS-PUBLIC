@@ -54,6 +54,8 @@
 #include <list>
 #include <string>
 
+#include <vtkVersionMacros.h>
+
 namespace LAMMPS_NS
 {
 
