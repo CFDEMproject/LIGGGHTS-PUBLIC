@@ -41,7 +41,7 @@ else:
 str = "cp ../src/libliggghts.so %s" % libdir
 print(str)
 outstr = commands.getoutput(str)
-if len(outstr.strip()): print(outstr)
+if outstr.strip(): print(outstr)
 
 # copy liggghts.py to pydir if it exists
 # if pydir not specified, install in site-packages via distutils setup()
@@ -53,7 +53,7 @@ if pydir:
   str = "cp ../python/liggghts.py %s" % pydir
   print(str)
   outstr = commands.getoutput(str)
-  if len(outstr.strip()): print(outstr)
+  if outstr.strip(): print(outstr)
   sys.exit()
   
 print("installing liggghts.py in Python site-packages dir")
