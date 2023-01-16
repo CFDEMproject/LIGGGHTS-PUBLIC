@@ -14,3 +14,5 @@ MAKE/Makefile.auto.options*
 STUBS/libmpi_stubs.a
 STUBS/mpi.o
 MAKE/auto_backup/*
+build/
+
