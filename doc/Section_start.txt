@@ -86,10 +86,11 @@ This section has the following sub-sections:
 "Read this first"_#start_2_1
 "Steps to build a LIGGGHTS(R)-PUBLIC executable"_#start_2_2
 "Advanced building using custom makefiles"_#start_2_2_expert
+"Building using cmake"_#start_2_2_cmake
 "Common errors that can occur when making LIGGGHTS(R)-PUBLIC"_#start_2_3
 "Additional build tips"_#start_2_4
 "Building for a Mac"_#start_2_5
-"Building for Windows"_#start_2_6 :ul
+"Building for Windows"_#start_2_6  :ul
 
 :line
 
@@ -126,7 +127,7 @@ that we can improve its performance.
 With LIGGGHTS version 3.5.1 we have rolled out a all new and magic
 Makefile.auto which hopefully will make building LIGGGHTS as simple as
 possible. If the following steps do not work for you please see the advanced
-building description "here"_#start_2_2_expert.
+building description "here"_#start_2_2_expert or use "cmake"_#start_2_2_cmake build system.
 
 Before attempting a build ensure that your system has all required prerequisites
 installed. A solid basis for several popular operating systems are listed below:
@@ -649,6 +650,158 @@ or
 gmake foo :pre
 
 You should get the executable lmp_foo when the build is complete.
+
+:line
+
+[Building using cmake] :h5,link(start_2_2_cmake)
+
+[Step 0]
+
+cmake should be installed, minimum version is 3.5.0. In debian based systems, this can be achieved via:
+
+sudo apt install cmake
+
+[Step 1]
+
+cd LIGGGHTS-PUBLIC/src
+mkdir build
+cd build
+cmake ..
+make
+
+[Exmaple]
+
+Example usage in a HPC using CentOS7:
+  cd LIGGGHTS-PUBLIC/src
+  mkdir build install
+  cd build
+  CC=mpicc CXX=mpic++ VTK_DIR=$HOME/vtk/install cmake\
+    -DCMAKE_BUILD_TYPE=Release\
+    -DCMAKE_INSTALL_PREFIX=../install\
+    ../src
+  make install -j8
+
+[cmake options]
+
+// Disable all features/models (OFF by default)                        
+DISABLE_ALL:BOOL=OFF 
+
+// Enable all features/models (OFF by default)                         
+ENABLE_ALL:BOOL=OFF                                                                                                                            
+                                                                                                                                               
+// Huge molecular systems with more than 2 billion atoms.              
+ENABLE_BIGBIG:BOOL=OFF                                                                                                                         
+                                                                                                                                               
+// Use ffmpeg                                                          
+ENABLE_FFMPEG:BOOL=OFF                                                                                                                         
+                                                                                                                                               
+// Use gzip                                                            
+ENABLE_GZIP:BOOL=OFF                                                                                                                           
+                                                                                                                                               
+// Use libjpeg                                                         
+ENABLE_JPEG:BOOL=OFF                                                                                                                           
+                                                                                                                                               
+// System does not recognize “long long” data types.                   
+ENABLE_LONGLONG_TO_LONG:BOOL=OFF                                                                                                               
+                                                                                                                                               
+// Cohesion Model Easo/capillary/viscous                               
+ENABLE_MODEL_COHESION_EASO_CAPILLARY_VISCOUS:BOOL=OFF                                                                                          
+                                                                       
+// Cohesion Model Off                                                                                                                          
+ENABLE_MODEL_COHESION_OFF:BOOL=OFF                                                                                                             
+                                                                       
+// Cohesion Model SJKR                                                                                                                         
+ENABLE_MODEL_COHESION_SJKR:BOOL=ON                                                                                                             
+                                                                                                                                               
+// Cohesion Model SJKR2                                                
+ENABLE_MODEL_COHESION_SJKR2:BOOL=ON                                                                                                            
+                                                                       
+// Cohesion Model Washino/capillary/viscous                            
+ENABLE_MODEL_COHESION_WASHINO_CAPILLARY_VISCOUS:BOOL=OFF               
+                                                                                                                                               
+// Edinburgh Model                                                                                                                             
+ENABLE_MODEL_EDINBURGH:BOOL=OFF                                                                                                                
+                                                                       
+// Edinburgh Stiffness Model                                                                                                                   
+ENABLE_MODEL_EDINBURGH_STIFFNESS:BOOL=OFF                                                                                                      
+                                                                                                                                               
+// Hertz Model                                                         
+ENABLE_MODEL_HERTZ:BOOL=ON                                                                                                                     
+                                                                       
+// Hertz Stiffness Model                                               
+ENABLE_MODEL_HERTZ_STIFFNESS:BOOL=OFF
+
+// Hooke Model                                                                                                                                 
+ENABLE_MODEL_HOOKE:BOOL=OFF                                                                                                                    
+                                                                       
+// Hooke Hysteresis Model                                                                                                                      
+ENABLE_MODEL_HOOKE_HYSTERESIS:BOOL=OFF                                                                                                         
+                                                                       
+// Hooke Stiffness Model                                                                                                                       
+ENABLE_MODEL_HOOKE_STIFFNESS:BOOL=OFF                                                                                                          
+                                                                       
+// Luding Model                                                                                                                                
+ENABLE_MODEL_LUDING:BOOL=OFF                                                                                                                   
+                                                                       
+// Rolling Model CDT                                                                                                                           
+ENABLE_MODEL_ROLLING_CDT:BOOL=OFF                                                                                                              
+                                                                       
+// Rolling Model EPSD                                                                                                                          
+ENABLE_MODEL_ROLLING_EPSD:BOOL=OFF                                                                                                             
+                                                                       
+// Rolling Model EPSD2                                                                                                                         
+ENABLE_MODEL_ROLLING_EPSD2:BOOL=ON                                                                                                             
+                                                                       
+// Rolling Model ESPD3                                                                                                                         
+ENABLE_MODEL_ROLLING_EPSD3:BOOL=OFF                                    
+                                                                                                                                               
+// Rolling Model Luding                                                                                                                        
+ENABLE_MODEL_ROLLING_LUDING:BOOL=OFF                                   
+                                                                                                                                               
+// Rolling Model Off                                                                                                                           
+ENABLE_MODEL_ROLLING_OFF:BOOL=OFF                                                                                                              
+                                                                       
+// Surface Model Default                                                                                                                       
+ENABLE_MODEL_SURFACE_DEFAULT:BOOL=ON                                   
+                                                                       
+// Surface Model Multicontact                                          
+ENABLE_MODEL_SURFACE_MULTICONTACT:BOOL=OFF                                                                                                     
+                                                                                                                                               
+// Surface Model Superquadric                                                                                                                  
+ENABLE_MODEL_SURFACE_SUPERQUADRIC:BOOL=OFF                             
+                                                                                                                                               
+// Tangential Model History                                                                                                                    
+ENABLE_MODEL_TANGENTIAL_HISTORY:BOOL=ON                                                                                                        
+                                                                       
+// Tangential Model Luding                                                                                                                     
+ENABLE_MODEL_TANGENTIAL_LUDING:BOOL=OFF                                
+                                                                       
+// Tangential Model No History                                                                                                                 
+ENABLE_MODEL_TANGENTIAL_NO_HISTORY:BOOL=ON
+
+// Tangential Model Off                                                                                                                        
+ENABLE_MODEL_TANGENTIAL_OFF:BOOL=OFF                                   
+                                                                                                                                               
+// Thornton Ning Model                                                                                                                         
+ENABLE_MODEL_THORNTON_NING:BOOL=OFF                                    
+                                                                                                                                               
+// Use MPI                                                                                                                                     
+ENABLE_MPI:BOOL=ON                                                     
+                                                                                                                                               
+// Use libpng                                                                                                                                  
+ENABLE_PNG:BOOL=OFF                                                    
+                                                                                                                                               
+// Use of 4-byte (small) vs 8-byte (big) integers.                                                                                             
+ENABLE_SMALLBIG:BOOL=ON                                                
+                                                                                                                                               
+// Machine does not support 64-bit integers.                                                                                                   
+ENABLE_SMALLSMALL:BOOL=OFF                                             
+                                                                                                                                               
+// Use Superquadrics                                                                                                                           
+ENABLE_SQ:BOOL=OFF                                                     
+                                                                                                                                               
+// Use dump_vtk                                                        
+ENABLE_VTK:BOOL=ON
 
 :line
 
