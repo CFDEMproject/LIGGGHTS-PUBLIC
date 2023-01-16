@@ -659,7 +659,7 @@ You should get the executable lmp_foo when the build is complete.
 
 cmake should be installed, minimum version is 3.5.0. In debian based systems, this can be achieved via:
 
-sudo apt install cmake
+sudo apt-get install cmake
 
 [Step 1]
 
@@ -671,8 +671,33 @@ make
 
 [Exmaple]
 
-Example usage in a HPC using CentOS7:
-  cd LIGGGHTS-PUBLIC/src
+Example installation in a HPC using CentOS 7:
+
+  module load gcc/9.2.0 openmpi/3.1.6 cmake/3.16.4
+
+  cd $HOME
+  git clone -b 'v8.0.1' https://gitlab.kitware.com/vtk/vtk.git
+  cd vtk
+  mkdir build install
+  cd build
+  CC=mpicc CXX=mpic++ cmake \
+       -DBUILD_TESTING=OFF\
+       -DCMAKE_BUILD_TYPE=Release\
+       -DModule_vtkIOMPIParallel=ON\
+       -DVTK_Group_MPI=ON\
+       -DVTK_Group_Rendering=OFF\
+       -DVTK_RENDERING_BACKEND=None\
+       -DVTK_USE_X=OFF\
+       -DModule_vtkIOMPIImage=ON\
+       -DModule_vtkParallelMPI=ON\
+       -DCMAKE_INSTALL_PREFIX=../install\
+       ..
+  make install -j8
+  export LD_LIBRARY_PATH=$HOME/vtk/install/lib:$HOME/vtk/install/share:$LD_LIBRARY_PATH
+
+  cd $HOME
+  git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git
+  cd LIGGGHTS-PUBLIC
   mkdir build install
   cd build
   CC=mpicc CXX=mpic++ VTK_DIR=$HOME/vtk/install cmake\
