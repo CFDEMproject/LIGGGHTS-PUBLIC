@@ -708,6 +708,10 @@ Example installation in a HPC using CentOS 7:
 
 [cmake options]
 
+// the include directory of libvtk can be set manually, e.g.:
+//   MANUAL_VTK_INCLUDE_DIR=/usr/include/vtk-9.1 cmake ..
+MANUAL_VTK_INCLUDE_DIR:STRING=""
+
 // Disable all features/models (OFF by default)                        
 DISABLE_ALL:BOOL=OFF 
 
