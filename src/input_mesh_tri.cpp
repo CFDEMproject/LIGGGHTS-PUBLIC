@@ -35,6 +35,7 @@
 
     Christoph Kloss (DCS Computing GmbH, Linz)
     Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+    Tóth János (MATE, Gödöllő)
 
     Copyright 2016-     CFDEMresearch GmbH, Linz
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -57,6 +58,11 @@
 #include "vector_liggghts.h"
 #include "input_mesh_tri.h"
 #include "tri_mesh.h"
+
+#define VERIFY(b) \
+    if(!(b)){ \
+       error->one(FLERR, #b); \
+    }
 
 using namespace LAMMPS_NS;
 
@@ -590,3 +596,176 @@ void InputMeshTri::addTriangle(TriMesh *mesh,double *a, double *b, double *c,int
     mesh->addElement(nodeTmp,lineNumber);
     destroy<double>(nodeTmp);
 }
+
+/* ----------------------------------------------------------------------
+   generates a mesh
+------------------------------------------------------------------------- */
+
+void InputMeshTri::meshgenerator(const GeneratorParameters * params,
+                                 class TriMesh *mesh,
+                                 bool verbose,
+                                 const int size_exclusion_list,
+                                 int *exclusion_list,
+                                 class Region *region)
+{
+    verbose_ = verbose;
+    size_exclusion_list_ = size_exclusion_list;
+    exclusion_list_ = exclusion_list;
+
+    switch(params->type){
+        case InputMeshTri::GeneratedType::CUBE:
+        case InputMeshTri::GeneratedType::BOX:
+            generate_box(params, mesh, region);
+            break;
+
+        case InputMeshTri::GeneratedType::UNKNOWN:
+        default:
+            error->one(FLERR, "unknown generator type");
+        break;
+    }
+
+}
+
+static inline void add_vertex(double triangle_data[9], int start_index, double x, double y, double z){
+    triangle_data[start_index + 0] = x;
+    triangle_data[start_index + 1] = y;
+    triangle_data[start_index + 2] = z;
+}
+
+void InputMeshTri::generate_box(const GeneratorParameters * params,
+                                 class TriMesh *mesh,
+                                 class Region *region)
+{
+
+// FIXME: create a function for this!
+#define SEND_TRIANGLE(v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z) \
+    if (me == 0) { \
+        add_vertex(triangle_data, 0, (v1x), (v1y), (v1z)); \
+        add_vertex(triangle_data, 3, (v2x), (v2y), (v2z)); \
+        add_vertex(triangle_data, 6, (v3x), (v3y), (v3z)); \
+    } \
+    MPI_Bcast(&triangle_data, 9, MPI_DOUBLE, 0, world); \
+    if(size_exclusion_list_ > 0 && count == (unsigned int)exclusion_list_[i_exclusion_list_]) { \
+        if(i_exclusion_list_ < size_exclusion_list_-1){ \
+            i_exclusion_list_++; \
+        } \
+    } \
+    else \
+    { \
+        if(!region || \
+            (region->match(&triangle_data[0]) && \
+            region->match(&triangle_data[3]) && \
+            region->match(&triangle_data[6]))) \
+        { \
+            addTriangle(mesh, &triangle_data[0], &triangle_data[3], &triangle_data[6], count); \
+        } \
+    }
+
+    unsigned int num_of_facets = 0;
+    float xsize = 0, ysize = 0, zsize = 0;
+    // master node
+    if (me == 0) {
+        num_of_facets += (params->mask & BoxMask::TOP) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BoxMask::BOTTOM) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BoxMask::FRONT) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BoxMask::BACK) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BoxMask::LEFT) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BoxMask::RIGHT) == 0 ? 0 : 2;
+
+        xsize = params->values[0] / 2.0f;
+        ysize = params->values[1] / 2.0f;
+        zsize = params->values[2] / 2.0f;
+    }
+
+    VERIFY(num_of_facets > 0);
+    VERIFY(xsize > 0 && ysize > 0 && zsize > 0);
+
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
+
+    double triangle_data[9];  // one triangle dataset (3 vertices, no normals)
+    unsigned int count = 0;
+
+    if(params->mask & BoxMask::LEFT){
+        SEND_TRIANGLE(-xsize,  ysize,  zsize,
+                      -xsize,  ysize, -zsize,
+                      -xsize, -ysize,  zsize);
+        ++count;
+
+        SEND_TRIANGLE(-xsize, -ysize,  zsize,
+                      -xsize,  ysize, -zsize,
+                      -xsize, -ysize, -zsize);
+        ++count;
+    }
+
+    if (params->mask & BoxMask::RIGHT) {
+        SEND_TRIANGLE(xsize, ysize, -zsize,
+                    xsize, ysize, zsize,
+                    xsize, -ysize, -zsize);
+        ++count;
+
+        SEND_TRIANGLE(xsize, -ysize, -zsize,
+                    xsize, ysize, zsize,
+                    xsize, -ysize, zsize);
+        ++count;
+    }
+
+    if (params->mask & BoxMask::TOP) {
+        SEND_TRIANGLE(xsize, ysize, zsize,
+                    -xsize, ysize, zsize,
+                    xsize, -ysize, zsize);
+        ++count;
+
+        SEND_TRIANGLE(xsize, -ysize, zsize,
+                    -xsize, ysize, zsize,
+                    -xsize, -ysize, zsize);
+        ++count;
+    }
+
+    if (params->mask & BoxMask::BOTTOM) {
+        SEND_TRIANGLE(-xsize, ysize, -zsize,
+                    xsize, ysize, -zsize,
+                    -xsize, -ysize, -zsize);
+        ++count;
+
+        SEND_TRIANGLE(-xsize, -ysize, -zsize,
+                    xsize, ysize, -zsize,
+                    xsize, -ysize, -zsize);
+        ++count;
+    }
+
+    if (params->mask & BoxMask::FRONT) {
+        SEND_TRIANGLE(xsize, -ysize, -zsize,
+                    xsize, -ysize, zsize,
+                    -xsize, -ysize, -zsize);
+        ++count;
+
+        SEND_TRIANGLE(-xsize, -ysize, -zsize,
+                    xsize, -ysize, zsize,
+                    -xsize, -ysize, zsize);
+        ++count;
+    }
+
+    if (params->mask & BoxMask::BACK) {
+        SEND_TRIANGLE(xsize, ysize, zsize,
+                    xsize, ysize, -zsize,
+                    -xsize, ysize, zsize);
+        ++count;
+
+        SEND_TRIANGLE(-xsize, ysize, zsize,
+                    xsize, ysize, -zsize,
+                    -xsize, ysize, -zsize);
+        ++count;
+    }
+
+    VERIFY(count == num_of_facets);
+
+    if(me == 0){
+        fprintf(screen, "mesh generated: %u triangels\n", count);
+    }
+
+#undef SEND_TRIANGLE
+
+}
+
+#undef VERIFY

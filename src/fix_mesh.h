@@ -36,6 +36,7 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
+    Tóth János (MATE, Gödöllő)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
@@ -52,6 +53,7 @@
 #include "fix_move_mesh.h"
 #include "abstract_mesh.h"
 #include <list>
+#include "input_mesh_tri.h"
 
 namespace LAMMPS_NS
 {
@@ -126,8 +128,9 @@ namespace LAMMPS_NS
         virtual void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
         virtual void scaleMesh(double const factor);
 
-        void create_mesh(char *mesh_fname, bool is_fix);
-        void create_mesh_restart(char *mesh_fname);
+        void create_mesh(const char *mesh_file_or_generator_type, bool is_fix);
+        void create_mesh_restart(const char *mesh_file_or_generator_type);
+        InputMeshTri::GeneratedType generator_type(const char * type);
 
         int iarg_;
 
@@ -178,6 +181,11 @@ namespace LAMMPS_NS
         // this friend class needs access to the moveMesh function
         friend class MeshModuleStress6DOF;
         friend class MeshModuleStress6DOFexternal;
+
+        void parse_and_consume_generator_args(int *start_arg, int narg, char **args);
+        bool is_valid_generator_type(const char * type);
+
+        InputMeshTri::GeneratorParameters gen_params_;
     };
 
 } /* namespace LAMMPS_NS */

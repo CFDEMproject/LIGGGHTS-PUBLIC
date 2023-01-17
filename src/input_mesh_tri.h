@@ -35,6 +35,8 @@
     (if not contributing author is listed, this file has been contributed
     by the core developer)
 
+    Tóth János (MATE, Gödöllő)
+
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
@@ -51,6 +53,28 @@ namespace LAMMPS_NS {
 class InputMeshTri : protected Input
 {
   public:
+    enum GeneratedType {
+        UNKNOWN = 0,
+        CUBE,
+        BOX
+    };
+
+    enum BoxMask {
+        TOP = (1 << 0),
+        BOTTOM = (1 << 1),
+        FRONT = (1 << 2),
+        BACK = (1 << 3),
+        LEFT = (1 << 4),
+        RIGHT = (1 << 5),
+    };
+
+    struct GeneratorParameters {
+        GeneratedType type;
+        int mask;
+        // cube/box: xsize, ysize, zsize
+        double values[3];
+    };
+
 
     InputMeshTri(class LAMMPS *lmp, int narg, char **arg);
     ~InputMeshTri();
@@ -59,7 +83,13 @@ class InputMeshTri : protected Input
                      const int size_exclusion_list, int *exclusion_list,
                      class Region *region);
 
+    void meshgenerator(const GeneratorParameters * params, class TriMesh *mesh,bool verbose,
+                     const int size_exclusion_list, int *exclusion_list,
+                     class Region *region);
+
   private:
+
+    void generate_box(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
 
     bool verbose_;
     int i_exclusion_list_;
@@ -69,8 +99,7 @@ class InputMeshTri : protected Input
     void meshtrifile_vtk(class TriMesh *mesh,class Region *region);
     void meshtrifile_stl(class TriMesh *mesh,class Region *region, const char * filename);
     void meshtrifile_stl_binary(class TriMesh *, class Region *region, const char * filename);
-    inline void addTriangle(class TriMesh *mesh,
-         double *a, double *b, double *c,int lineNumber);
+    inline void addTriangle(class TriMesh *mesh, double *a, double *b, double *c,int lineNumber);
 
 };
 
