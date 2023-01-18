@@ -360,10 +360,7 @@ void FixMesh::create_mesh(const char *mesh_file_or_generator_type, bool is_fix)
 
         if (is_fix)
         {
-            if(is_valid_generator_type(mesh_file_or_generator_type)){
-                 error->fix_error(FLERR, this, "TODO");
-            } else {
-                 Fix *fix_base = modify->find_fix_id(mesh_file_or_generator_type);
+                Fix *fix_base = modify->find_fix_id(mesh_file_or_generator_type);
                 if (!fix_base)
                     error->all(FLERR, "Could not find appropriate fix to read mesh data from");
                 if (!fix_base->can_create_mesh())
@@ -380,7 +377,6 @@ void FixMesh::create_mesh(const char *mesh_file_or_generator_type, bool is_fix)
                         static_cast<TriMesh*>(mesh_)->addElement(node, -1);
                 }
                 delete [] node;
-            }
         }
         else
         {
