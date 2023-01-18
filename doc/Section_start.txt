@@ -1,4 +1,4 @@
-"Previous Section"_Section_intro.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_input_script.html :c
+ope"Previous Section"_Section_intro.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_input_script.html :c
 
 :link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
@@ -672,6 +672,10 @@ In order to compile LIGGGHTS(R)-PUBLIC type:
   make :pre
 
 NOTE: The ccmake program can help to fine-tune the available cmake flags.
+
+NOTE: If the build fails with the "fatal error: vtkSmartPointer.h: No such file or directory" or
+similar vtk related error try to use the MANUAL_VTK_INCLUDE_DIR cmake flag, e.g.:
+MANUAL_VTK_INCLUDE_DIR=/usr/include/vtk-9.1 cmake ..
 
 [Exmaple]
 
