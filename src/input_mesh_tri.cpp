@@ -64,6 +64,10 @@
        error->one(FLERR, #b); \
     }
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 using namespace LAMMPS_NS;
 
 InputMeshTri::InputMeshTri(LAMMPS *lmp, int argc, char **argv) : Input(lmp, argc, argv),
@@ -618,6 +622,10 @@ void InputMeshTri::meshgenerator(const GeneratorParameters * params,
             generate_box(params, mesh, region);
             break;
 
+        case InputMeshTri::GeneratedType::CYLINDER:
+            generate_cylinder(params, mesh, region);
+            break;
+
         case InputMeshTri::GeneratedType::UNKNOWN:
         default:
             error->one(FLERR, "unknown generator type");
@@ -632,49 +640,58 @@ static inline void add_vertex(double triangle_data[9], int start_index, double x
     triangle_data[start_index + 2] = z;
 }
 
+
+void InputMeshTri::broadcast_and_add_triangle(
+  class TriMesh *mesh, class Region *region, unsigned int *count,
+  double v1x, double v1y, double v1z,
+  double v2x, double v2y, double v2z,
+  double v3x, double v3y, double v3z)
+{
+    double triangle_data[9];  // one triangle dataset (3 vertices, no normals)
+
+    if (me == 0) {
+        add_vertex(triangle_data, 0, v1x, v1y, v1z);
+        add_vertex(triangle_data, 3, v2x, v2y, v2z);
+        add_vertex(triangle_data, 6, v3x, v3y, v3z);
+    }
+
+    MPI_Bcast(&triangle_data, 9, MPI_DOUBLE, 0, world);
+    *count += 1;
+    if(size_exclusion_list_ > 0 && *count == (unsigned int)exclusion_list_[i_exclusion_list_]) {
+        if(i_exclusion_list_ < size_exclusion_list_-1){
+            i_exclusion_list_++;
+        }
+    }
+    else
+    {
+        if(!region
+            || (region->match(&triangle_data[0])
+            &&  region->match(&triangle_data[3])
+            &&  region->match(&triangle_data[6])))
+        {
+            addTriangle(mesh, &triangle_data[0], &triangle_data[3], &triangle_data[6], *count); \
+        }
+    }
+}
+
 void InputMeshTri::generate_box(const GeneratorParameters * params,
                                  class TriMesh *mesh,
                                  class Region *region)
 {
-
-// FIXME: create a function for this!
-#define SEND_TRIANGLE(v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z) \
-    if (me == 0) { \
-        add_vertex(triangle_data, 0, (v1x), (v1y), (v1z)); \
-        add_vertex(triangle_data, 3, (v2x), (v2y), (v2z)); \
-        add_vertex(triangle_data, 6, (v3x), (v3y), (v3z)); \
-    } \
-    MPI_Bcast(&triangle_data, 9, MPI_DOUBLE, 0, world); \
-    if(size_exclusion_list_ > 0 && count == (unsigned int)exclusion_list_[i_exclusion_list_]) { \
-        if(i_exclusion_list_ < size_exclusion_list_-1){ \
-            i_exclusion_list_++; \
-        } \
-    } \
-    else \
-    { \
-        if(!region || \
-            (region->match(&triangle_data[0]) && \
-            region->match(&triangle_data[3]) && \
-            region->match(&triangle_data[6]))) \
-        { \
-            addTriangle(mesh, &triangle_data[0], &triangle_data[3], &triangle_data[6], count); \
-        } \
-    }
-
     unsigned int num_of_facets = 0;
-    float xsize = 0, ysize = 0, zsize = 0;
+    double xsize = 0, ysize = 0, zsize = 0;
     // master node
     if (me == 0) {
-        num_of_facets += (params->mask & BoxMask::TOP) == 0 ? 0 : 2;
-        num_of_facets += (params->mask & BoxMask::BOTTOM) == 0 ? 0 : 2;
-        num_of_facets += (params->mask & BoxMask::FRONT) == 0 ? 0 : 2;
-        num_of_facets += (params->mask & BoxMask::BACK) == 0 ? 0 : 2;
-        num_of_facets += (params->mask & BoxMask::LEFT) == 0 ? 0 : 2;
-        num_of_facets += (params->mask & BoxMask::RIGHT) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BOX_TOP) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BOX_BOTTOM) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BOX_FRONT) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BOX_BACK) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BOX_LEFT) == 0 ? 0 : 2;
+        num_of_facets += (params->mask & BOX_RIGHT) == 0 ? 0 : 2;
 
-        xsize = params->values[0] / 2.0f;
-        ysize = params->values[1] / 2.0f;
-        zsize = params->values[2] / 2.0f;
+        xsize = params->dvalues[0] / 2.0;
+        ysize = params->dvalues[1] / 2.0;
+        zsize = params->dvalues[2] / 2.0;
     }
 
     VERIFY(num_of_facets > 0);
@@ -683,89 +700,166 @@ void InputMeshTri::generate_box(const GeneratorParameters * params,
     // communicate number of triangles
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
 
-    double triangle_data[9];  // one triangle dataset (3 vertices, no normals)
     unsigned int count = 0;
 
-    if(params->mask & BoxMask::LEFT){
-        SEND_TRIANGLE(-xsize,  ysize,  zsize,
-                      -xsize,  ysize, -zsize,
-                      -xsize, -ysize,  zsize);
-        ++count;
+    if(params->mask & BOX_LEFT){
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   -xsize,  ysize,  zsize,
+                                   -xsize,  ysize, -zsize,
+                                   -xsize, -ysize,  zsize);
 
-        SEND_TRIANGLE(-xsize, -ysize,  zsize,
-                      -xsize,  ysize, -zsize,
-                      -xsize, -ysize, -zsize);
-        ++count;
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   -xsize, -ysize,  zsize,
+                                   -xsize,  ysize, -zsize,
+                                   -xsize, -ysize, -zsize);
     }
 
-    if (params->mask & BoxMask::RIGHT) {
-        SEND_TRIANGLE(xsize, ysize, -zsize,
-                    xsize, ysize, zsize,
-                    xsize, -ysize, -zsize);
-        ++count;
+    if (params->mask & BOX_RIGHT) {
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   xsize, ysize, -zsize,
+                                   xsize, ysize, zsize,
+                                   xsize, -ysize, -zsize);
 
-        SEND_TRIANGLE(xsize, -ysize, -zsize,
-                    xsize, ysize, zsize,
-                    xsize, -ysize, zsize);
-        ++count;
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   xsize, -ysize, -zsize,
+                                   xsize, ysize, zsize,
+                                   xsize, -ysize, zsize);
     }
 
-    if (params->mask & BoxMask::TOP) {
-        SEND_TRIANGLE(xsize, ysize, zsize,
-                    -xsize, ysize, zsize,
-                    xsize, -ysize, zsize);
-        ++count;
+    if (params->mask & BOX_TOP) {
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   xsize, ysize, zsize,
+                                   -xsize, ysize, zsize,
+                                   xsize, -ysize, zsize);
 
-        SEND_TRIANGLE(xsize, -ysize, zsize,
-                    -xsize, ysize, zsize,
-                    -xsize, -ysize, zsize);
-        ++count;
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   xsize, -ysize, zsize,
+                                   -xsize, ysize, zsize,
+                                   -xsize, -ysize, zsize);
     }
 
-    if (params->mask & BoxMask::BOTTOM) {
-        SEND_TRIANGLE(-xsize, ysize, -zsize,
-                    xsize, ysize, -zsize,
-                    -xsize, -ysize, -zsize);
-        ++count;
+    if (params->mask & BOX_BOTTOM) {
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   -xsize, ysize, -zsize,
+                                   xsize, ysize, -zsize,
+                                   -xsize, -ysize, -zsize);
 
-        SEND_TRIANGLE(-xsize, -ysize, -zsize,
-                    xsize, ysize, -zsize,
-                    xsize, -ysize, -zsize);
-        ++count;
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   -xsize, -ysize, -zsize,
+                                   xsize, ysize, -zsize,
+                                   xsize, -ysize, -zsize);
     }
 
-    if (params->mask & BoxMask::FRONT) {
-        SEND_TRIANGLE(xsize, -ysize, -zsize,
-                    xsize, -ysize, zsize,
-                    -xsize, -ysize, -zsize);
-        ++count;
+    if (params->mask & BOX_FRONT) {
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   xsize, -ysize, -zsize,
+                                   xsize, -ysize, zsize,
+                                   -xsize, -ysize, -zsize);
 
-        SEND_TRIANGLE(-xsize, -ysize, -zsize,
-                    xsize, -ysize, zsize,
-                    -xsize, -ysize, zsize);
-        ++count;
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   -xsize, -ysize, -zsize,
+                                   xsize, -ysize, zsize,
+                                   -xsize, -ysize, zsize);
     }
 
-    if (params->mask & BoxMask::BACK) {
-        SEND_TRIANGLE(xsize, ysize, zsize,
-                    xsize, ysize, -zsize,
-                    -xsize, ysize, zsize);
-        ++count;
+    if (params->mask & BOX_BACK) {
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   xsize, ysize, zsize,
+                                   xsize, ysize, -zsize,
+                                   -xsize, ysize, zsize);
 
-        SEND_TRIANGLE(-xsize, ysize, zsize,
-                    xsize, ysize, -zsize,
-                    -xsize, ysize, -zsize);
-        ++count;
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   -xsize, ysize, zsize,
+                                   xsize, ysize, -zsize,
+                                   -xsize, ysize, -zsize);
     }
 
     VERIFY(count == num_of_facets);
 
     if(me == 0){
-        fprintf(screen, "mesh generated: %u triangels\n", count);
+        fprintf(screen, "box mesh generated: %u triangels\n", count);
+    }
+}
+
+void InputMeshTri::generate_cylinder(const GeneratorParameters * params, class TriMesh *mesh, class Region *region){
+    unsigned int num_of_facets = 0;
+    double radius = 0, zsize = 0;
+    int nsegments = 0;
+    // master node
+    if (me == 0) {
+        nsegments = params->ivalues[0];
+
+        num_of_facets += (params->mask & CYL_TOP) == 0 ? 0 : nsegments;
+        num_of_facets += (params->mask & CYL_BOTTOM) == 0 ? 0 : nsegments;
+        num_of_facets += (params->mask & CYL_SIDE) == 0 ? 0 : 2 * nsegments;
+
+        radius = params->dvalues[0];
+        zsize = params->dvalues[1] / 2.0;
     }
 
-#undef SEND_TRIANGLE
+    VERIFY(nsegments > 0);
+    VERIFY(radius > 0 && zsize > 0);
 
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
+
+    double *ring = (double*)malloc(nsegments * sizeof(double) * 2);
+    VERIFY(ring != NULL)
+
+    double angle_increment = (2 * M_PI) / (double)(nsegments);
+
+    for (int i = 0; i < nsegments; ++i) {
+        double x = radius * cos(i * angle_increment);
+        double y = radius * sin(i * angle_increment);
+
+        ring[(i * 2) + 0] = x;
+        ring[(i * 2) + 1] = y;
+    }
+
+#define RINGX(i)    ring[((i) * 2) + 0]
+#define RINGY(i)    ring[((i) * 2) + 1]
+
+    unsigned int count = 0;
+    for (int i = 0; i < nsegments; ++i) {
+        int pair = i == 0 ? nsegments - 1 : i - 1;
+
+        if (params->mask & CYL_TOP) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       0, 0, zsize,
+                                       RINGX(i), RINGY(i), zsize,
+                                       RINGX(pair), RINGY(pair), zsize);
+        }
+
+        if (params->mask & CYL_BOTTOM) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       0, 0, -zsize,
+                                       RINGX(i), RINGY(i), -zsize,
+                                       RINGX(pair), RINGY(pair), -zsize);
+        }
+
+        if (params->mask & CYL_SIDE) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       RINGX(i), RINGY(i), zsize,
+                                       RINGX(pair), RINGY(pair), zsize,
+                                       RINGX(i), RINGY(i), -zsize);
+
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       RINGX(pair), RINGY(pair), zsize,
+                                       RINGX(pair), RINGY(pair), -zsize,
+                                       RINGX(i), RINGY(i), -zsize);
+        }
+    }
+
+#undef RINGX
+#undef RINGY
+
+    VERIFY(count == num_of_facets);
+
+    if(me == 0){
+        fprintf(screen, "cylinder mesh generated: %u triangels\n", count);
+    }
+
+    free(ring);
 }
 
 #undef VERIFY

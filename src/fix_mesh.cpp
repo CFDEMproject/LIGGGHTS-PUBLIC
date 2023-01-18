@@ -821,18 +821,26 @@ void FixMesh::parse_and_consume_generator_args(int *start_arg, int narg, char **
     switch(gen_type){
         case InputMeshTri::GeneratedType::CUBE:{
             ++arg;
-            GET_FLOAT(gen_params_.values[0], "size");
+            GET_FLOAT(gen_params_.dvalues[0], "size");
             GET_INT(gen_params_.mask, "mask");
 
-            gen_params_.values[1] = gen_params_.values[0];
-            gen_params_.values[2] = gen_params_.values[0];
+            gen_params_.dvalues[1] = gen_params_.dvalues[0];
+            gen_params_.dvalues[2] = gen_params_.dvalues[0];
         } break;
 
         case InputMeshTri::GeneratedType::BOX:{
             ++arg;
-            GET_FLOAT(gen_params_.values[0], "xsize");
-            GET_FLOAT(gen_params_.values[1], "ysize");
-            GET_FLOAT(gen_params_.values[2], "zsize");
+            GET_FLOAT(gen_params_.dvalues[0], "xsize");
+            GET_FLOAT(gen_params_.dvalues[1], "ysize");
+            GET_FLOAT(gen_params_.dvalues[2], "zsize");
+            GET_INT(gen_params_.mask, "mask");
+        } break;
+
+        case InputMeshTri::GeneratedType::CYLINDER:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "radius");
+            GET_FLOAT(gen_params_.dvalues[1], "height");
+            GET_INT(gen_params_.ivalues[0], "nsegments");
             GET_INT(gen_params_.mask, "mask");
         } break;
 
@@ -859,6 +867,8 @@ InputMeshTri::GeneratedType FixMesh::generator_type(const char * type){
         return InputMeshTri::GeneratedType::CUBE;
     } else if(strcmp(type, "box") == 0){
         return InputMeshTri::GeneratedType::BOX;
+    } else if(strcmp(type, "cylinder") == 0){
+        return InputMeshTri::GeneratedType::CYLINDER;
     } else {
         return InputMeshTri::GeneratedType::UNKNOWN;
     }

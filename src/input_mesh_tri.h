@@ -56,23 +56,33 @@ class InputMeshTri : protected Input
     enum GeneratedType {
         UNKNOWN = 0,
         CUBE,
-        BOX
+        BOX,
+        CYLINDER,
     };
 
     enum BoxMask {
-        TOP = (1 << 0),
-        BOTTOM = (1 << 1),
-        FRONT = (1 << 2),
-        BACK = (1 << 3),
-        LEFT = (1 << 4),
-        RIGHT = (1 << 5),
+        BOX_TOP = (1 << 0),
+        BOX_BOTTOM = (1 << 1),
+        BOX_FRONT = (1 << 2),
+        BOX_BACK = (1 << 3),
+        BOX_LEFT = (1 << 4),
+        BOX_RIGHT = (1 << 5),
+    };
+
+    enum CylinderMask {
+        CYL_TOP = (1 << 0),
+        CYL_BOTTOM = (1 << 1),
+        CYL_SIDE = (1 << 2),
     };
 
     struct GeneratorParameters {
         GeneratedType type;
         int mask;
         // cube/box: xsize, ysize, zsize
-        double values[3];
+        // cylinder: radius, height
+        double dvalues[3];
+        // cylinder: number of segments
+        int ivalues[2];
     };
 
 
@@ -90,6 +100,9 @@ class InputMeshTri : protected Input
   private:
 
     void generate_box(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
+    void generate_cylinder(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
+
+    void broadcast_and_add_triangle(class TriMesh *mesh, class Region *region, unsigned int *count, double v1x, double v1y, double v1z, double v2x, double  v2y, double v2z, double v3x, double v3y, double v3z);
 
     bool verbose_;
     int i_exclusion_list_;
