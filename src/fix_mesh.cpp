@@ -853,6 +853,17 @@ void FixMesh::parse_and_consume_generator_args(int *start_arg, int narg, char **
             GET_INT(gen_params_.mask, "mask");
         } break;
 
+        case InputMeshTri::GeneratedType::DISK:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "radius");
+            GET_INT(gen_params_.ivalues[0], "nsegments");
+        } break;
+
+        case InputMeshTri::GeneratedType::PLANE:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "size");
+        } break;
+
         case InputMeshTri::GeneratedType::UNKNOWN:
         default:
             snprintf(msg, sizeof(msg), "unknown generator type '%s'", args[arg]);
@@ -880,6 +891,10 @@ InputMeshTri::GeneratedType FixMesh::generator_type(const char * type){
         return InputMeshTri::GeneratedType::CYLINDER;
     } else if(strcmp(type, "pipe") == 0){
         return InputMeshTri::GeneratedType::PIPE;
+    } else if(strcmp(type, "disk") == 0){
+        return InputMeshTri::GeneratedType::DISK;
+    } else if(strcmp(type, "plane") == 0){
+        return InputMeshTri::GeneratedType::PLANE;
     } else {
         return InputMeshTri::GeneratedType::UNKNOWN;
     }

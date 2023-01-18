@@ -59,6 +59,8 @@ class InputMeshTri : protected Input
         BOX,
         CYLINDER,
         PIPE,
+        DISK,
+        PLANE,
     };
 
     enum BoxMask {
@@ -91,8 +93,10 @@ class InputMeshTri : protected Input
         // cube/box: xsize, ysize, zsize
         // cylinder: radius, zsize
         // pipe: inner_radius, outer_radius, zsize
+        // disk: radius
+        // plane: size
         double dvalues[3];
-        // cylinder/pipe: number_of_segments
+        // cylinder/pipe/disk: number_of_segments
         int ivalues[1];
     };
 
@@ -113,6 +117,8 @@ class InputMeshTri : protected Input
     void generate_box(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
     void generate_cylinder(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
     void generate_pipe(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
+    void generate_disk(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
+    void generate_plane(const GeneratorParameters * params, class TriMesh *mesh, class Region *region);
 
     void broadcast_and_add_triangle(class TriMesh *mesh, class Region *region, unsigned int *count, double v1x, double v1y, double v1z, double v2x, double  v2y, double v2z, double v3x, double v3y, double v3z);
 

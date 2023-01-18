@@ -630,6 +630,14 @@ void InputMeshTri::meshgenerator(const GeneratorParameters * params,
             generate_pipe(params, mesh, region);
             break;
 
+        case InputMeshTri::GeneratedType::DISK:
+            generate_disk(params, mesh, region);
+            break;
+
+        case InputMeshTri::GeneratedType::PLANE:
+            generate_plane(params, mesh, region);
+            break;
+
         case InputMeshTri::GeneratedType::UNKNOWN:
         default:
             error->one(FLERR, "unknown generator type");
@@ -1001,6 +1009,91 @@ void InputMeshTri::generate_pipe(const GeneratorParameters * params, class TriMe
 
     free(inner_ring);
     free(outer_ring);
+}
+
+void InputMeshTri::generate_disk(const GeneratorParameters * params, class TriMesh *mesh, class Region *region){
+    unsigned int num_of_facets = 0;
+    double radius = 0;
+    int nsegments = 0;
+    // master node
+    if (me == 0) {
+        nsegments = params->ivalues[0];
+        num_of_facets = nsegments;
+        radius = params->dvalues[0];
+    }
+
+    VERIFY(nsegments > 0);
+    VERIFY(radius > 0);
+
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
+
+    double *ring = (double*)malloc(nsegments * sizeof(double) * 2);
+    VERIFY(ring != NULL);
+
+    double angle_increment = (2 * M_PI) / (double)(nsegments);
+
+    for (int i = 0; i < nsegments; ++i) {
+        double x = radius * cos(i * angle_increment);
+        double y = radius * sin(i * angle_increment);
+
+        ring[(i * 2) + 0] = x;
+        ring[(i * 2) + 1] = y;
+    }
+
+#define RINGX(i)    ring[((i) * 2) + 0]
+#define RINGY(i)    ring[((i) * 2) + 1]
+
+    unsigned int count = 0;
+    for (int i = 0; i < nsegments; ++i) {
+        int pair = i == 0 ? nsegments - 1 : i - 1;
+
+
+        broadcast_and_add_triangle(mesh, region, &count,
+                                   0, 0, 0,
+                                   RINGX(i), RINGY(i), 0,
+                                   RINGX(pair), RINGY(pair), 0);
+    }
+
+#undef RINGX
+#undef RINGY
+
+    if(me == 0){
+        fprintf(screen, "disk mesh generated: %u triangels\n", count);
+    }
+
+    free(ring);
+}
+
+void InputMeshTri::generate_plane(const GeneratorParameters * params, class TriMesh *mesh, class Region *region){
+    unsigned int num_of_facets = 0;
+    double size = 0;
+    // master node
+    if (me == 0) {
+        num_of_facets = 2;
+        size = params->dvalues[0] / 2.0;
+    }
+
+    VERIFY(size > 0);
+
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
+
+    unsigned int count = 0;
+
+    broadcast_and_add_triangle(mesh, region, &count,
+                               size, size,  0,
+                               -size, size, 0,
+                               size, -size, 0);
+
+    broadcast_and_add_triangle(mesh, region, &count,
+                               size, -size, 0,
+                               -size, size, 0,
+                               -size, -size, 0);
+
+    if(me == 0){
+        fprintf(screen, "plane mesh generated: %u triangels\n", count);
+    }
 }
 
 #undef VERIFY
