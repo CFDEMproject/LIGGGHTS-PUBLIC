@@ -626,6 +626,10 @@ void InputMeshTri::meshgenerator(const GeneratorParameters * params,
             generate_cylinder(params, mesh, region);
             break;
 
+        case InputMeshTri::GeneratedType::PIPE:
+            generate_pipe(params, mesh, region);
+            break;
+
         case InputMeshTri::GeneratedType::UNKNOWN:
         default:
             error->one(FLERR, "unknown generator type");
@@ -804,7 +808,7 @@ void InputMeshTri::generate_cylinder(const GeneratorParameters * params, class T
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
 
     double *ring = (double*)malloc(nsegments * sizeof(double) * 2);
-    VERIFY(ring != NULL)
+    VERIFY(ring != NULL);
 
     double angle_increment = (2 * M_PI) / (double)(nsegments);
 
@@ -860,6 +864,143 @@ void InputMeshTri::generate_cylinder(const GeneratorParameters * params, class T
     }
 
     free(ring);
+}
+
+void InputMeshTri::generate_pipe(const GeneratorParameters * params, class TriMesh *mesh, class Region *region){
+    unsigned int num_of_facets = 0;
+    double inner_radius = 0, outer_radius = 0, zsize = 0;
+    int nsegments = 0;
+    // master node
+    if (me == 0) {
+        nsegments = params->ivalues[0];
+
+        num_of_facets += (params->mask & PIPE_INNER_TOP) == 0 ? 0 : nsegments;
+        num_of_facets += (params->mask & PIPE_OUTER_TOP) == 0 ? 0 : 2 * nsegments;
+        num_of_facets += (params->mask & PIPE_INNER_BOTTOM) == 0 ? 0 : nsegments;
+        num_of_facets += (params->mask & PIPE_OUTER_BOTTOM) == 0 ? 0 : 2 * nsegments;
+        num_of_facets += (params->mask & PIPE_INNER_SIDE) == 0 ? 0 : 2 * nsegments;
+        num_of_facets += (params->mask & PIPE_OUTER_SIDE) == 0 ? 0 : 2 * nsegments;
+
+        inner_radius = params->dvalues[0];
+        outer_radius = params->dvalues[1];
+        zsize = params->dvalues[2] / 2.0;
+    }
+
+    VERIFY(nsegments > 0);
+    VERIFY(inner_radius > 0 && outer_radius && zsize > 0);
+
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
+
+    double *inner_ring = (double*)malloc(nsegments * sizeof(double) * 2);
+    VERIFY(inner_ring != NULL);
+
+    double *outer_ring = (double*)malloc(nsegments * sizeof(double) * 2);
+    VERIFY(outer_ring != NULL);
+
+    double angle_increment = (2 * M_PI) / (double)(nsegments);
+
+    for (int i = 0; i < nsegments; ++i) {
+        double ix = inner_radius * cos(i * angle_increment);
+        double iy = inner_radius * sin(i * angle_increment);
+
+        double ox = outer_radius * cos(i * angle_increment);
+        double oy = outer_radius * sin(i * angle_increment);
+
+        inner_ring[(i * 2) + 0] = ix;
+        inner_ring[(i * 2) + 1] = iy;
+
+        outer_ring[(i * 2) + 0] = ox;
+        outer_ring[(i * 2) + 1] = oy;
+    }
+
+#define IRINGX(i)    inner_ring[((i) * 2) + 0]
+#define IRINGY(i)    inner_ring[((i) * 2) + 1]
+
+#define ORINGX(i)    outer_ring[((i) * 2) + 0]
+#define ORINGY(i)    outer_ring[((i) * 2) + 1]
+
+    unsigned int count = 0;
+    for (int i = 0; i < nsegments; ++i) {
+        int pair = i == 0 ? nsegments - 1 : i - 1;
+
+        if (params->mask & PIPE_INNER_TOP) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       0, 0, zsize,
+                                       IRINGX(i), IRINGY(i), zsize,
+                                       IRINGX(pair), IRINGY(pair), zsize);
+        }
+
+        if (params->mask & PIPE_OUTER_TOP) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       IRINGX(i), IRINGY(i), zsize,
+                                       IRINGX(pair), IRINGY(pair), zsize,
+                                       ORINGX(i), ORINGY(i), zsize);
+
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       IRINGX(pair), IRINGY(pair), zsize,
+                                       ORINGX(pair), ORINGY(pair), zsize,
+                                       ORINGX(i), ORINGY(i), zsize);
+        }
+
+        if (params->mask & PIPE_INNER_BOTTOM) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       0, 0, -zsize,
+                                       IRINGX(i), IRINGY(i), -zsize,
+                                       IRINGX(pair), IRINGY(pair), -zsize);
+        }
+
+        if (params->mask & PIPE_OUTER_BOTTOM) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       IRINGX(i), IRINGY(i), -zsize,
+                                       IRINGX(pair), IRINGY(pair), -zsize,
+                                       ORINGX(i), ORINGY(i), -zsize);
+
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       IRINGX(pair), IRINGY(pair), -zsize,
+                                       ORINGX(pair), ORINGY(pair), -zsize,
+                                       ORINGX(i), ORINGY(i), -zsize);
+        }
+
+        if (params->mask & PIPE_INNER_SIDE) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       IRINGX(i), IRINGY(i), zsize,
+                                       IRINGX(pair), IRINGY(pair), zsize,
+                                       IRINGX(i), IRINGY(i), -zsize);
+
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       IRINGX(pair), IRINGY(pair), zsize,
+                                       IRINGX(pair), IRINGY(pair), -zsize,
+                                       IRINGX(i), IRINGY(i), -zsize);
+        }
+
+        if (params->mask & PIPE_OUTER_SIDE) {
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       ORINGX(i), ORINGY(i), zsize,
+                                       ORINGX(pair), ORINGY(pair), zsize,
+                                       ORINGX(i), ORINGY(i), -zsize);
+
+            broadcast_and_add_triangle(mesh, region, &count,
+                                       ORINGX(pair), ORINGY(pair), zsize,
+                                       ORINGX(pair), ORINGY(pair), -zsize,
+                                       ORINGX(i), ORINGY(i), -zsize);
+        }
+    }
+
+#undef IRINGX
+#undef IRINGY
+
+#undef ORINGX
+#undef ORINGY
+
+    VERIFY(count == num_of_facets);
+
+    if(me == 0){
+        fprintf(screen, "pipe mesh generated: %u triangels\n", count);
+    }
+
+    free(inner_ring);
+    free(outer_ring);
 }
 
 #undef VERIFY

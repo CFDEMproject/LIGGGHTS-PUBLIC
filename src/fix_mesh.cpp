@@ -839,7 +839,16 @@ void FixMesh::parse_and_consume_generator_args(int *start_arg, int narg, char **
         case InputMeshTri::GeneratedType::CYLINDER:{
             ++arg;
             GET_FLOAT(gen_params_.dvalues[0], "radius");
-            GET_FLOAT(gen_params_.dvalues[1], "height");
+            GET_FLOAT(gen_params_.dvalues[1], "zsize");
+            GET_INT(gen_params_.ivalues[0], "nsegments");
+            GET_INT(gen_params_.mask, "mask");
+        } break;
+
+        case InputMeshTri::GeneratedType::PIPE:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "inner_radius");
+            GET_FLOAT(gen_params_.dvalues[1], "outer_radius");
+            GET_FLOAT(gen_params_.dvalues[2], "zsize");
             GET_INT(gen_params_.ivalues[0], "nsegments");
             GET_INT(gen_params_.mask, "mask");
         } break;
@@ -869,6 +878,8 @@ InputMeshTri::GeneratedType FixMesh::generator_type(const char * type){
         return InputMeshTri::GeneratedType::BOX;
     } else if(strcmp(type, "cylinder") == 0){
         return InputMeshTri::GeneratedType::CYLINDER;
+    } else if(strcmp(type, "pipe") == 0){
+        return InputMeshTri::GeneratedType::PIPE;
     } else {
         return InputMeshTri::GeneratedType::UNKNOWN;
     }
