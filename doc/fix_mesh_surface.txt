@@ -19,8 +19,15 @@ ID, is documented in "fix"_fix.html command. :ulb,l
 mesh/surface or mesh/surface/planar = style name of this fix command  :l
 module_list = list of mesh modules separated by / :l
 one data_keyword/data_value pair needs to be appended :l
-data_keyword = {file} or {fix} :l
+data_keyword = {file}, {generate} or {fix} :l
   {file} value = name of STL or VTK file containing the triangle mesh data
+  {generate} value = mesh generator
+    cube size mask
+    box xsize ysize zsize mask
+    cylinder radius zsize nsegments mask
+    pipe inner_radius outer_radius zsize nsegments mask
+    disk radius nsegments
+    plane size
   {fix} value = id of a fix that can generate meshes (e.g. this one using the {extrude_planar} keyword) :pre
 zero or more premesh_keywords/premesh_value pairs may be appended :l
 premesh_keyword = {type} or {precision} or {heal} or {min_feature_length}  or {element_exclusion_list} or {verbose} :l
@@ -75,7 +82,10 @@ zero or more module_keywords/module_value pairs may be appended if a mesh module
 fix cad all mesh/surface file mesh.stl type 1
 fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie
 fix extrude all mesh/surface file plane.stl type 1 extrude_planar 0.1
-fix side_walls all mesh/surface fix extrude type 1 :pre
+fix side_walls all mesh/surface fix extrude type 1
+fix cad all mesh/surface file mesh.stl type 1
+fix cubeMesh all mesh/surface/stress generate cube 0.1 63 type 1
+fix pipeMesh all mesh/surface/stress generate pipe 0.05 0.06 0.1 10 58 type 1 :pre
 
 [Description:]
 
@@ -116,6 +126,38 @@ belt velocity parallel to the mesh face, the velocity magnitude for each mesh fa
 equal to the conveyor belt velocity. This ensures the model makes sense also in case
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 {surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
+
+The {generate} keyword always generates axis-aligned meshes where the center of mass is at (0, 0, 0).
+The {plane} and the {disk} meshes lie on the XY plane.
+The mask value allows selected sides to be included in the mesh. It is a bitmask, meaning the bit values must
+be bitwise or-ed together, which can be an addition in this case.
+The mask bits for the different types:
+
+cube & box:
+
+  1 - TOP ( z+ )
+  2 - BOTTOM ( z- )
+  4 - FRONT ( y- )
+  8 - BACK ( y+ )
+  16 - LEFT ( x- )
+  32 - RIGHT ( x+ ) :pre
+
+cylinder:
+
+  1 - TOP ( z+ )
+  2 - BOTTOM ( z- )
+  4 - SIDE :pre
+
+pipe:
+
+  1 - INNER_TOP ( inner_radius, z+ )
+  2 - OUTER_TOP ( outer_radius, z+ )
+  4 - INNER_BOTTOM ( inner_radius, z- )
+  8 - OUTER_BOTTOM ( outer_radius, z- )
+  16 - INNER_SIDE ( inner_radius )
+  32 - OUTER_SIDE ( outer_radius ) :pre
+
+For example: A full cube has a mask of 63, an opened pipe 58.
 
 [Mesh modules:]
 
