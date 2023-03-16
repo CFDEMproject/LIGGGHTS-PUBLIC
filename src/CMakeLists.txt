@@ -1,3 +1,40 @@
+# ----------------------------------------------------------------------
+#    This is the
+#
+#    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+#    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+#    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+#    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+#    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+#    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
+#
+#    DEM simulation engine, released by
+#    DCS Computing Gmbh, Linz, Austria
+#    http://www.dcs-computing.com, office@dcs-computing.com
+#
+#    LIGGGHTS® is part of CFDEM®project:
+#    http://www.liggghts.com | http://www.cfdem.com
+#
+#    Core developer and main author:
+#    Christoph Kloss, christoph.kloss@dcs-computing.com
+#
+#    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+#    License, version 2 or later. It is distributed in the hope that it will
+#    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+#    received a copy of the GNU General Public License along with LIGGGHTS®.
+#    If not, see http://www.gnu.org/licenses . See also top-level README
+#    and LICENSE files.
+#
+#    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+#    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+#    See http://www.cfdem.com/terms-trademark-policy for details.
+#
+#-------------------------------------------------------------------------
+#    Contributing author:
+#    Tóth János (MATE, Gödöllő)
+#-------------------------------------------------------------------------
+
 PROJECT(LIGGGHTS C CXX)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5.0)
 
@@ -91,6 +128,10 @@ OPTION(ENABLE_MODEL_ROLLING_LUDING "Rolling Model Luding" ${DEFAULT_OFF})
 OPTION(ENABLE_MODEL_SURFACE_DEFAULT "Surface Model Default" ${DEFAULT_ON})
 OPTION(ENABLE_MODEL_SURFACE_SUPERQUADRIC "Surface Model Superquadric" ${DEFAULT_OFF})
 OPTION(ENABLE_MODEL_SURFACE_MULTICONTACT "Surface Model Multicontact" ${DEFAULT_OFF})
+
+# the include directory of libvtk can be set manually. e.g.:
+#   MANUAL_VTK_INCLUDE_DIR=/usr/include/vtk-9.1 cmake ..
+SET(MANUAL_VTK_INCLUDE_DIR "")
 
 #=======================================
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -296,9 +337,9 @@ IF(ENABLE_MPI)
 
   IF(MPI_FOUND)
     INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
-    TARGET_LINK_LIBRARIES(liggghts_static ${MPI_LIBRARIES})
-    TARGET_LINK_LIBRARIES(liggghts_shared ${MPI_LIBRARIES})
-    TARGET_LINK_LIBRARIES(liggghts_bin ${MPI_LIBRARIES})
+    TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${MPI_LIBRARIES})
+    TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC ${MPI_LIBRARIES})
+    TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC ${MPI_LIBRARIES})
 
     IF(MPI_COMPILE_FLAGS)
       SET_TARGET_PROPERTIES(liggghts_static PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
@@ -323,15 +364,31 @@ ENDIF()
 
 #=======================================
 IF(ENABLE_VTK)
-  FIND_PACKAGE(VTK NO_MODULE)
+  FIND_PACKAGE(VTK COMPONENTS NO_MODULE)
 
   IF(VTK_FOUND)
-    INCLUDE(${VTK_USE_FILE})
-    ADD_DEFINITIONS(-DLAMMPS_VTK)
-    TARGET_LINK_LIBRARIES(liggghts_static ${VTK_LIBRARIES})
-    TARGET_LINK_LIBRARIES(liggghts_shared ${VTK_LIBRARIES})
-    TARGET_LINK_LIBRARIES(liggghts_bin ${VTK_LIBRARIES})
+    IF(VTK_VERSION VERSION_LESS "8.90.0")
+      INCLUDE(${VTK_USE_FILE})
+    ELSE()
+      # dirty hack....
+      # TARGET_LINK_LIBRARIES(x PUBLIC ${VTK_LIBRARIES}) should solve this
+      # but doesn't :(
+      # https://gitlab.kitware.com/vtk/vtk/-/issues/17820
+      IF("${MANUAL_VTK_INCLUDE_DIR}" STREQUAL "")
+        STRING(REPLACE "." ";" VERSION_LIST ${VTK_VERSION})
+        LIST(GET VERSION_LIST 0 VTK_VERSION_MAJOR)
+        LIST(GET VERSION_LIST 1 VTK_VERSION_MINOR)
+        INCLUDE_DIRECTORIES("/usr/include/vtk-${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}")
+      ELSE()
+        INCLUDE_DIRECTORIES(${MANUAL_VTK_INCLUDE_DIR})
+      ENDIF()  
+    ENDIF()
+    
+    TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${VTK_LIBRARIES})
+    TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC ${VTK_LIBRARIES})
+    TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC ${VTK_LIBRARIES})
 
+    ADD_DEFINITIONS(-DLAMMPS_VTK)
     SET(ENABLED_OPTIONS "${ENABLED_OPTIONS} VTK")
 
     MESSAGE(STATUS "Found VTK: version " ${VTK_VERSION})
@@ -349,9 +406,9 @@ IF(ENABLE_JPEG)
   IF(JPEG_FOUND)
     INCLUDE_DIRECTORIES(${JPEG_INCLUDE_DIR})
     ADD_DEFINITIONS(-DLAMMPS_JPEG)
-    TARGET_LINK_LIBRARIES(liggghts_static jpeg)
-    TARGET_LINK_LIBRARIES(liggghts_shared jpeg)
-    TARGET_LINK_LIBRARIES(liggghts_bin jpeg)
+    TARGET_LINK_LIBRARIES(liggghts_static PUBLIC jpeg)
+    TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC jpeg)
+    TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC jpeg)
     SET(ENABLED_OPTIONS "${ENABLED_OPTIONS} JPEG")
   ELSE()
     MESSAGE(FATAL_ERROR "JPEG NOT found!")
@@ -367,9 +424,9 @@ IF(ENABLE_PNG)
   IF(PNG_FOUND)
     INCLUDE_DIRECTORIES(${PNG_INCLUDE_DIR})
     ADD_DEFINITIONS(-DLAMMPS_PNG)
-    TARGET_LINK_LIBRARIES(liggghts_static ${PNG_LIBRARY})
-    TARGET_LINK_LIBRARIES(liggghts_shared ${PNG_LIBRARY})
-    TARGET_LINK_LIBRARIES(liggghts_bin ${PNG_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${PNG_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC ${PNG_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC ${PNG_LIBRARY})
     SET(ENABLED_OPTIONS "${ENABLED_OPTIONS} PNG")
   ELSE()
     MESSAGE(FATAL_ERROR "PNG NOT found!")
@@ -398,9 +455,9 @@ IF(ENABLE_FFMPEG)
   )
     INCLUDE_DIRECTORIES(${AVCODEC_INCLUDE_DIR} ${AVFORMAT_INCLUDE_DIR} ${AVUTIL_INCLUDE_DIR})
     ADD_DEFINITIONS(-DLAMMPS_FFMPEG)
-    TARGET_LINK_LIBRARIES(liggghts_static ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY})
-    TARGET_LINK_LIBRARIES(liggghts_shared ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY})
-    TARGET_LINK_LIBRARIES(liggghts_bin ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY})
     
     SET(ENABLED_OPTIONS "${ENABLED_OPTIONS} FFMPEG")
     
@@ -436,9 +493,9 @@ IF(ENABLE_SQ)
   IF(Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS(-DSUPERQUADRIC_ACTIVE_FLAG -DNONSPHERICAL_ACTIVE_FLAG)
-    TARGET_LINK_LIBRARIES(liggghts_static ${Boost_LIBRARY})
-    TARGET_LINK_LIBRARIES(liggghts_shared ${Boost_LIBRARY})
-    TARGET_LINK_LIBRARIES(liggghts_bin ${Boost_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${Boost_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC ${Boost_LIBRARY})
+    TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC ${Boost_LIBRARY})
 
     SET(ENABLED_OPTIONS "${ENABLED_OPTIONS} SQ")
 

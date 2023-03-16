@@ -86,10 +86,11 @@ This section has the following sub-sections:
 "Read this first"_#start_2_1
 "Steps to build a LIGGGHTS(R)-PUBLIC executable"_#start_2_2
 "Advanced building using custom makefiles"_#start_2_2_expert
+"Building using cmake"_#start_2_2_cmake
 "Common errors that can occur when making LIGGGHTS(R)-PUBLIC"_#start_2_3
 "Additional build tips"_#start_2_4
 "Building for a Mac"_#start_2_5
-"Building for Windows"_#start_2_6 :ul
+"Building for Windows"_#start_2_6  :ul
 
 :line
 
@@ -126,7 +127,7 @@ that we can improve its performance.
 With LIGGGHTS version 3.5.1 we have rolled out a all new and magic
 Makefile.auto which hopefully will make building LIGGGHTS as simple as
 possible. If the following steps do not work for you please see the advanced
-building description "here"_#start_2_2_expert.
+building description "here"_#start_2_2_expert or use "cmake"_#start_2_2_cmake build system.
 
 Before attempting a build ensure that your system has all required prerequisites
 installed. A solid basis for several popular operating systems are listed below:
@@ -649,6 +650,117 @@ or
 gmake foo :pre
 
 You should get the executable lmp_foo when the build is complete.
+
+:line
+
+[Building using cmake] :h5,link(start_2_2_cmake)
+
+[Step 0]
+
+cmake should be installed, minimum version is 3.5.0. In a Debian/Ubuntu based systems, this can be achieved by typing:
+
+  sudo apt-get install cmake :pre
+
+[Step 1]
+
+In order to compile LIGGGHTS(R)-PUBLIC type:
+
+  cd LIGGGHTS-PUBLIC/src
+  mkdir build
+  cd build
+  cmake ..
+  make :pre
+
+NOTE: The ccmake program can help to fine-tune the available cmake flags.
+
+NOTE: If the build fails with the "fatal error: vtkSmartPointer.h: No such file or directory" or
+similar vtk related error try to use the MANUAL_VTK_INCLUDE_DIR cmake flag, e.g.:
+MANUAL_VTK_INCLUDE_DIR=/usr/include/vtk-9.1 cmake ..
+
+[Exmaple]
+
+Example installation on a HPC running CentOS 7:
+
+  # load required modules
+  module load gcc/9.2.0 openmpi/3.1.6 cmake/3.16.4
+  # compile and install vtk
+  cd $HOME
+  git clone -b 'v8.0.1' https://gitlab.kitware.com/vtk/vtk.git
+  cd vtk
+  mkdir build install
+  cd build
+  CC=mpicc CXX=mpic++ cmake
+       -DBUILD_TESTING=OFF
+       -DCMAKE_BUILD_TYPE=Release
+       -DModule_vtkIOMPIParallel=ON
+       -DVTK_Group_MPI=ON
+       -DVTK_Group_Rendering=OFF
+       -DVTK_RENDERING_BACKEND=None
+       -DVTK_USE_X=OFF
+       -DModule_vtkIOMPIImage=ON
+       -DModule_vtkParallelMPI=ON
+       -DCMAKE_INSTALL_PREFIX=../install
+       ..
+  make install -j8
+  # the following line should be added to $HOME/.bashrc
+  export LD_LIBRARY_PATH=$HOME/vtk/install/lib:$HOME/vtk/install/share:$LD_LIBRARY_PATH
+  # compile and install LIGGGHTS-PUBLIC
+  cd $HOME
+  git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git
+  cd LIGGGHTS-PUBLIC
+  mkdir build install
+  cd build
+  CC=mpicc CXX=mpic++ VTK_DIR=$HOME/vtk/install cmake
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=../install
+    ../src
+  make install -j8 :pre
+
+[cmake options]
+
+The following cmake flags can be used (the default values are shown as well):
+
+- MANUAL_VTK_INCLUDE_DIR:STRING=""
+- DISABLE_ALL:BOOL=OFF
+- ENABLE_ALL:BOOL=OFF
+- ENABLE_BIGBIG:BOOL=OFF
+- ENABLE_FFMPEG:BOOL=OFF
+- ENABLE_GZIP:BOOL=OFF
+- ENABLE_JPEG:BOOL=OFF
+- ENABLE_LONGLONG_TO_LONG:BOOL=OFF
+- ENABLE_MODEL_COHESION_EASO_CAPILLARY_VISCOUS:BOOL=OFF
+- ENABLE_MODEL_COHESION_OFF:BOOL=OFF
+- ENABLE_MODEL_COHESION_SJKR:BOOL=ON
+- ENABLE_MODEL_COHESION_SJKR2:BOOL=ON
+- ENABLE_MODEL_COHESION_WASHINO_CAPILLARY_VISCOUS:BOOL=OFF
+- ENABLE_MODEL_EDINBURGH:BOOL=OFF
+- ENABLE_MODEL_EDINBURGH_STIFFNESS:BOOL=OFF
+- ENABLE_MODEL_HERTZ:BOOL=ON
+- ENABLE_MODEL_HERTZ_STIFFNESS:BOOL=OFF
+- ENABLE_MODEL_HOOKE:BOOL=OFF
+- ENABLE_MODEL_HOOKE_HYSTERESIS:BOOL=OFF
+- ENABLE_MODEL_HOOKE_STIFFNESS:BOOL=OFF
+- ENABLE_MODEL_LUDING:BOOL=OFF
+- ENABLE_MODEL_ROLLING_CDT:BOOL=OFF
+- ENABLE_MODEL_ROLLING_EPSD:BOOL=OFF
+- ENABLE_MODEL_ROLLING_EPSD2:BOOL=ON
+- ENABLE_MODEL_ROLLING_EPSD3:BOOL=OFF
+- ENABLE_MODEL_ROLLING_LUDING:BOOL=OFF
+- ENABLE_MODEL_ROLLING_OFF:BOOL=OFF
+- ENABLE_MODEL_SURFACE_DEFAULT:BOOL=ON
+- ENABLE_MODEL_SURFACE_MULTICONTACT:BOOL=OFF
+- ENABLE_MODEL_SURFACE_SUPERQUADRIC:BOOL=OFF
+- ENABLE_MODEL_TANGENTIAL_HISTORY:BOOL=ON
+- ENABLE_MODEL_TANGENTIAL_LUDING:BOOL=OFF
+- ENABLE_MODEL_TANGENTIAL_NO_HISTORY:BOOL=ON
+- ENABLE_MODEL_TANGENTIAL_OFF:BOOL=OFF
+- ENABLE_MODEL_THORNTON_NING:BOOL=OFF
+- ENABLE_MPI:BOOL=ON
+- ENABLE_PNG:BOOL=OFF
+- ENABLE_SMALLBIG:BOOL=ON
+- ENABLE_SMALLSMALL:BOOL=OFF
+- ENABLE_SQ:BOOL=OFF
+- ENABLE_VTK:BOOL=ON
 
 :line
 
