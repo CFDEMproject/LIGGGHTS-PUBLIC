@@ -36,6 +36,7 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
+    Tóth János (MATE, Gödöllő)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
@@ -107,14 +108,24 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 
     iarg_ = 3;
 
-    char mesh_fname[256];
+    char mesh_file_or_generator_type[256];
     bool is_fix = strcmp(arg[iarg_], "fix") == 0;
-    if(!(strcmp(arg[iarg_],"file")==0 || is_fix))
-        error->fix_error(FLERR,this,"expecting keyword 'file' or 'fix'");
+    bool is_file = strcmp(arg[iarg_], "file") == 0;
+    bool is_generate = strcmp(arg[iarg_], "generate") == 0;
+
+    if(!(is_file || is_fix || is_generate))
+        error->fix_error(FLERR, this, "expecting keyword 'file', 'generate' or 'fix'");
     iarg_++;
-    strcpy(mesh_fname,arg[iarg_++]);
+
+    strcpy(mesh_file_or_generator_type, arg[iarg_]);
 
     // parse args
+    if(is_generate){
+        parse_and_consume_generator_args(&iarg_, narg, arg);
+        iarg_--;
+    }
+
+    iarg_++;
 
     bool hasargs = true;
     while(iarg_ < narg && hasargs)
@@ -205,8 +216,8 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
     // construct a mesh - can be surface or volume mesh
     // just create object and return if reading data from restart file
     
-    if(modify->have_restart_data(this)) create_mesh_restart(mesh_fname);
-    else create_mesh(mesh_fname, is_fix);
+    if(modify->have_restart_data(this)) create_mesh_restart(mesh_file_or_generator_type);
+    else create_mesh(mesh_file_or_generator_type, is_fix);
 
     // parse further args
 
@@ -329,10 +340,9 @@ void FixMesh::post_create()
 
 /* ---------------------------------------------------------------------- */
 
-void FixMesh::create_mesh(char *mesh_fname, bool is_fix)
+void FixMesh::create_mesh(const char *mesh_file_or_generator_type, bool is_fix)
 {
-    
-    if(strncmp(style,"mesh/surface",12) == 0)
+    if(strncmp(style,"mesh/surface", 12) == 0)
     {
         if(strcmp(style,"mesh/surface/stress/deform") == 0)
             mesh_ = new TriMeshDeformable(lmp);
@@ -350,71 +360,73 @@ void FixMesh::create_mesh(char *mesh_fname, bool is_fix)
 
         if (is_fix)
         {
-            Fix *fix_base = modify->find_fix_id(mesh_fname);
-            if (!fix_base)
-                error->all(FLERR, "Could not find appropriate fix to read mesh data from");
-            if (!fix_base->can_create_mesh())
-                error->all(FLERR, "Supplied fix does not provide a mesh");
-            const int tri_count = fix_base->getCreateMeshTriCount();
-            if (tri_count == 0)
-                error->all(FLERR, "Extruded triangle count is zero. Are you sure your fix mesh/surface has extrude_planar set");
-            double **node;
-            node = new double*[3];
-            for (int i=0; i < tri_count*3; i++)
-            {
-                node[i%3] = fix_base->getCreateMeshTriNode(i);
-                if (i%3 == 2)
-                    static_cast<TriMesh*>(mesh_)->addElement(node, -1);
-            }
-            delete [] node;
+                Fix *fix_base = modify->find_fix_id(mesh_file_or_generator_type);
+                if (!fix_base)
+                    error->all(FLERR, "Could not find appropriate fix to read mesh data from");
+                if (!fix_base->can_create_mesh())
+                    error->all(FLERR, "Supplied fix does not provide a mesh");
+                const int tri_count = fix_base->getCreateMeshTriCount();
+                if (tri_count == 0)
+                    error->all(FLERR, "Extruded triangle count is zero. Are you sure your fix mesh/surface has extrude_planar set");
+                double **node;
+                node = new double*[3];
+                for (int i=0; i < tri_count*3; i++)
+                {
+                    node[i%3] = fix_base->getCreateMeshTriNode(i);
+                    if (i%3 == 2)
+                        static_cast<TriMesh*>(mesh_)->addElement(node, -1);
+                }
+                delete [] node;
         }
         else
         {
-            // read file
-            // can be from STL file or VTK file
             InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
 
             // case write exlusion list
             if(!read_exclusion_list_ && element_exclusion_list_)
                 mesh_->setElementExclusionList(element_exclusion_list_);
 
-            mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,
-                                    size_exclusion_list_,exclusion_list_,region_);
-            
+            if(is_valid_generator_type(mesh_file_or_generator_type)){
+                mesh_input->meshgenerator(&gen_params_, static_cast<TriMesh*>(mesh_), verbose_, size_exclusion_list_, exclusion_list_,region_);
+            } else {
+                // read file
+                // can be from STL file or VTK file
+                mesh_input->meshtrifile(mesh_file_or_generator_type, static_cast<TriMesh*>(mesh_), verbose_, size_exclusion_list_, exclusion_list_,region_);
+            }
+
             delete mesh_input;
         }
     }
-    else error->one(FLERR,"Illegal implementation of create_mesh();");
+    else error->one(FLERR, "Illegal implementation of create_mesh();");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixMesh::create_mesh_restart(char *mesh_fname)
+void FixMesh::create_mesh_restart(const char *mesh_file_or_generator_type)
 {
     
-    if(strcmp(style,"mesh/surface/stress/deform") == 0)
+    if(strcmp(style, "mesh/surface/stress/deform") == 0)
         mesh_ = new TriMeshDeformable(lmp);
-    else if(strcmp(style,"mesh/surface/planar") == 0)
+    else if(strcmp(style, "mesh/surface/planar") == 0)
         mesh_ = new TriMeshPlanar(lmp);
-    else if(strncmp(style,"mesh/surface",12) == 0)
+    else if(strncmp(style, "mesh/surface", 12) == 0)
         mesh_ = new TriMesh(lmp);
-    else error->one(FLERR,"Illegal implementation of create_mesh();");
+    else error->one(FLERR, "Illegal implementation of create_mesh();");
 
     // test if file exists
-    if (0 == comm->me)
+    if (0 == comm->me && !is_valid_generator_type(mesh_file_or_generator_type))
     {
        char str[512];
-       FILE * test = fopen(mesh_fname,"r");
+       FILE * test = fopen(mesh_file_or_generator_type, "r");
        if(!test)
        {
-
-          sprintf(str,"Cannot open mesh file %s. FYI: This file is required, but data will be taken from restart file",mesh_fname);
-          error->one(FLERR,str);
+          sprintf(str,"Cannot open mesh file %s. FYI: This file is required, but data will be taken from restart file", mesh_file_or_generator_type);
+          error->one(FLERR, str);
        }
        else
        {
-          sprintf(str,"INFO: mesh file (%s) is required, but data will be taken from restart file",mesh_fname);
-          error->message(FLERR,str);
+          sprintf(str,"INFO: mesh file (%s) is required, but data will be taken from restart file", mesh_file_or_generator_type);
+          error->message(FLERR, str);
           fclose(test);
        }
     }
@@ -746,4 +758,148 @@ void FixMesh::rotate(const double dphi, const double * const axis, const double 
         if (found)
             (*it)->rotate(dphi, axis, center);
     }
+}
+
+/* ----------------------------------------------------------------------
+   parse generator arguments
+------------------------------------------------------------------------- */
+
+void FixMesh::parse_and_consume_generator_args(int *start_arg, int narg, char **args){
+    int arg = *start_arg;
+    char msg[512];
+
+
+#define GET_FLOAT(f, p) \
+        if(arg >= narg - 1){ \
+            snprintf(msg, sizeof(msg), "missing generator argument: %s", (p));\
+            error->fix_error(FLERR, this, msg); \
+        } \
+        { \
+            char *next; \
+            double tmp = strtod(args[arg], &next); \
+            if ((next == args[arg]) || (*next != '\0')) { \
+                snprintf(msg, sizeof(msg), "generator argument '%s' is not a valid value", (p)); \
+                error->fix_error(FLERR, this, msg); \
+            } \
+            if(tmp <= 0){ \
+                snprintf(msg, sizeof(msg), "generator argument '%s' must be > 0", (p)); \
+                error->fix_error(FLERR, this, msg); \
+            } \
+            ++arg; \
+            f = tmp; \
+        }
+
+#define GET_INT(i, p) \
+        if(arg >= narg - 1){ \
+            snprintf(msg, sizeof(msg), "missing generator argument: %s", (p));\
+            error->fix_error(FLERR, this, msg); \
+        } \
+        { \
+            char *next; \
+            int tmp = (int)strtol(args[arg], &next, 10); \
+            if ((next == args[arg]) || (*next != '\0')) { \
+                snprintf(msg, sizeof(msg), "generator argument '%s' is not a valid value", (p));\
+                error->fix_error(FLERR, this, msg); \
+            } \
+            if(tmp <= 0){ \
+                snprintf(msg, sizeof(msg), "generator argument '%s' must be > 0", (p)); \
+                error->fix_error(FLERR, this, msg); \
+            } \
+            ++arg; \
+            i = tmp; \
+        }
+
+    memset(&gen_params_, 0, sizeof(InputMeshTri::GeneratorParameters));
+
+    InputMeshTri::GeneratedType gen_type = generator_type(args[arg]);
+    gen_params_.type = gen_type;
+
+    switch(gen_type){
+        case InputMeshTri::GeneratedType::CUBE:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "size");
+            GET_INT(gen_params_.mask, "mask");
+
+            gen_params_.dvalues[1] = gen_params_.dvalues[0];
+            gen_params_.dvalues[2] = gen_params_.dvalues[0];
+        } break;
+
+        case InputMeshTri::GeneratedType::BOX:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "xsize");
+            GET_FLOAT(gen_params_.dvalues[1], "ysize");
+            GET_FLOAT(gen_params_.dvalues[2], "zsize");
+            GET_INT(gen_params_.mask, "mask");
+        } break;
+
+        case InputMeshTri::GeneratedType::CYLINDER:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "radius");
+            GET_FLOAT(gen_params_.dvalues[1], "zsize");
+            GET_INT(gen_params_.ivalues[0], "nsegments");
+            GET_INT(gen_params_.mask, "mask");
+        } break;
+
+        case InputMeshTri::GeneratedType::PIPE:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "inner_radius");
+            GET_FLOAT(gen_params_.dvalues[1], "outer_radius");
+            GET_FLOAT(gen_params_.dvalues[2], "zsize");
+            GET_INT(gen_params_.ivalues[0], "nsegments");
+            GET_INT(gen_params_.mask, "mask");
+        } break;
+
+        case InputMeshTri::GeneratedType::DISK:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "radius");
+            GET_INT(gen_params_.ivalues[0], "nsegments");
+        } break;
+
+        case InputMeshTri::GeneratedType::PLANE:{
+            ++arg;
+            GET_FLOAT(gen_params_.dvalues[0], "size");
+        } break;
+
+        case InputMeshTri::GeneratedType::UNKNOWN:
+        default:
+            snprintf(msg, sizeof(msg), "unknown generator type '%s'", args[arg]);
+            error->fix_error(FLERR, this, msg);
+        break;
+    }
+
+
+#undef GET_FLOAT
+#undef GET_INT
+
+    *start_arg = arg;
+}
+
+/* ----------------------------------------------------------------------
+  get the generator type
+------------------------------------------------------------------------- */
+
+InputMeshTri::GeneratedType FixMesh::generator_type(const char * type){
+    if(strcmp(type, "cube") == 0){
+        return InputMeshTri::GeneratedType::CUBE;
+    } else if(strcmp(type, "box") == 0){
+        return InputMeshTri::GeneratedType::BOX;
+    } else if(strcmp(type, "cylinder") == 0){
+        return InputMeshTri::GeneratedType::CYLINDER;
+    } else if(strcmp(type, "pipe") == 0){
+        return InputMeshTri::GeneratedType::PIPE;
+    } else if(strcmp(type, "disk") == 0){
+        return InputMeshTri::GeneratedType::DISK;
+    } else if(strcmp(type, "plane") == 0){
+        return InputMeshTri::GeneratedType::PLANE;
+    } else {
+        return InputMeshTri::GeneratedType::UNKNOWN;
+    }
+}
+
+/* ----------------------------------------------------------------------
+  checks for valid generator types
+------------------------------------------------------------------------- */
+
+bool FixMesh::is_valid_generator_type(const char * type){
+    return generator_type(type) != InputMeshTri::GeneratedType::UNKNOWN;
 }
