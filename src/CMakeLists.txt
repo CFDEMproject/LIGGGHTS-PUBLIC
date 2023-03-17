@@ -129,10 +129,6 @@ OPTION(ENABLE_MODEL_SURFACE_DEFAULT "Surface Model Default" ${DEFAULT_ON})
 OPTION(ENABLE_MODEL_SURFACE_SUPERQUADRIC "Surface Model Superquadric" ${DEFAULT_OFF})
 OPTION(ENABLE_MODEL_SURFACE_MULTICONTACT "Surface Model Multicontact" ${DEFAULT_OFF})
 
-# the include directory of libvtk can be set manually. e.g.:
-#   MANUAL_VTK_INCLUDE_DIR=/usr/include/vtk-9.1 cmake ..
-SET(MANUAL_VTK_INCLUDE_DIR "")
-
 #=======================================
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
@@ -370,18 +366,7 @@ IF(ENABLE_VTK)
     IF(VTK_VERSION VERSION_LESS "8.90.0")
       INCLUDE(${VTK_USE_FILE})
     ELSE()
-      # dirty hack....
-      # TARGET_LINK_LIBRARIES(x PUBLIC ${VTK_LIBRARIES}) should solve this
-      # but doesn't :(
-      # https://gitlab.kitware.com/vtk/vtk/-/issues/17820
-      IF("${MANUAL_VTK_INCLUDE_DIR}" STREQUAL "")
-        STRING(REPLACE "." ";" VERSION_LIST ${VTK_VERSION})
-        LIST(GET VERSION_LIST 0 VTK_VERSION_MAJOR)
-        LIST(GET VERSION_LIST 1 VTK_VERSION_MINOR)
-        INCLUDE_DIRECTORIES("/usr/include/vtk-${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}")
-      ELSE()
-        INCLUDE_DIRECTORIES(${MANUAL_VTK_INCLUDE_DIR})
-      ENDIF()  
+      INCLUDE_DIRECTORIES("${VTK_PREFIX_PATH}/include/vtk-${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}")
     ENDIF()
     
     TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${VTK_LIBRARIES})
