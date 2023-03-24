@@ -69,6 +69,9 @@
 #include "memory.h"
 #include "error.h"
 #include "force.h"
+#include "math_extra_liggghts.h"
+#include "stdlib.h"
+#include "time.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -138,6 +141,9 @@ Variable::Variable(LAMMPS *lmp) : Pointers(lmp)
   precedence[MULTIPLY] = precedence[DIVIDE] = precedence[MODULO] = 6;
   precedence[CARAT] = 7;
   precedence[UNARY] = precedence[NOT] = 8;
+
+  // NOTE: better random generator for random_seed()?
+  srand(time(NULL));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -3961,12 +3967,33 @@ unsigned int Variable::data_mask(char *str)
 
 
 /* ----------------------------------------------------------------------
-   generates a randim prime number between 10'000 and INT_MAX
+   generates a random prime number between 10'000 and INT_MAX
+
+   rand() is not the best, a more optimal soultion would be:
+
+      #define FIRTS_PRIME 10007     // first prime greather than 10'000
+      #define LAST_PRIME 2147483647 // last prime less than INT_MAX
+      std::random_device dev;
+      std::mt19937 rng(dev());
+      std::uniform_int_distribution<std::mt19937::result_type> dist(FIRTS_PRIME, LAST_PRIME);
+      seed = dist(rng);
+
+    but it depends on C++11, so the backward compatibility would be lost
 ------------------------------------------------------------------------- */
 int Variable::random_seed(){
-  int seed = 1;
+  int seed = 0;
 
-  printf("random seed generated: %d\n", seed);
+  static const int FIRTS_PRIME = 10007;
+  static const int LAST_PRIME = 2147483647;
+  static const int SEED_RANGE = (LAST_PRIME - FIRTS_PRIME);
+
+  if(me == 0){
+    while(!MathExtraLiggghts::isPrime(seed)){
+      seed = (rand() % SEED_RANGE) + FIRTS_PRIME;
+    }
+  }
+
+  MPI_Bcast(&seed,1,MPI_INT,0,world);
 
   return seed;
 }
