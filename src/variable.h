@@ -128,6 +128,8 @@ class Variable : protected Pointers {
   int inumeric(char *);
   char *find_next_comma(char *);
   void print_tree(Tree *, int);
+
+  int random_seed();
 };
 
 class VarReader : protected Pointers {

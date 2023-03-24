@@ -99,7 +99,7 @@ enum{DONE,ADD,SUBTRACT,MULTIPLY,DIVIDE,CARAT,MODULO,UNARY,
      SQRT,EXP,LN,LOG,ABS,SIN,COS,TAN,ASIN,ACOS,ATAN,ATAN2,
      RANDOM,NORMAL,CEIL,FLOOR,ROUND,RAMP,STAGGER,LOGFREQ,STRIDE,
      VDISPLACE,SWIGGLE,CWIGGLE,GMASK,RMASK,GRMASK,
-     VALUE,ATOMARRAY,TYPEARRAY,INTARRAY};
+     VALUE,ATOMARRAY,TYPEARRAY,INTARRAY,RANDOMSEED};
 
 // customize by adding a special function
 
@@ -1673,7 +1673,8 @@ double Variable::evaluate(char *str, Tree **tree)
      atan2(y,x),random(x,y,z),normal(x,y,z),ceil(),floor(),round(),
      ramp(x,y),stagger(x,y),logfreq(x,y,z),stride(x,y,z),
      vdisplace(x,y),swiggle(x,y,z),cwiggle(x,y,z),
-     gmask(x),rmask(x),grmask(x,y)
+     gmask(x),rmask(x),grmask(x,y),
+     randomseed()
 ---------------------------------------------------------------------- */
 
 double Variable::collapse_tree(Tree *tree)
@@ -2107,6 +2108,17 @@ double Variable::collapse_tree(Tree *tree)
     return tree->value;
   }
 
+  if (tree->type == RANDOMSEED) {
+    arg1 = collapse_tree(tree->left);
+    if (tree->left->type != VALUE || arg1 != 0){
+      error->one(FLERR,"The argument of randomseed() must be 0");
+    }
+
+    tree->type = VALUE;
+    tree->value = random_seed();
+    return tree->value;
+  }
+
   // mask functions do not become a single collapsed value
 
   if (tree->type == GMASK) return 0.0;
@@ -2124,7 +2136,8 @@ double Variable::collapse_tree(Tree *tree)
      atan2(y,x),random(x,y,z),normal(x,y,z),ceil(),floor(),round(),
      ramp(x,y),stagger(x,y),logfreq(x,y,z),stride(x,y,z),
      vdisplace(x,y),swiggle(x,y,z),cwiggle(x,y,z),
-     gmask(x),rmask(x),grmask(x,y)
+     gmask(x),rmask(x),grmask(x,y),
+     randomseed()
 ---------------------------------------------------------------------- */
 
 double Variable::eval_tree(Tree *tree, int i)
@@ -2368,6 +2381,14 @@ double Variable::eval_tree(Tree *tree, int i)
     return arg;
   }
 
+  if (tree->type == RANDOMSEED){
+    arg1 = eval_tree(tree->left,i);
+    if (arg1 != 0.0)
+      error->one(FLERR,"The argument of randomseed() must be 0");
+
+    return random_seed();
+  }
+
   if (tree->type == GMASK) {
     if (atom->mask[i] & tree->ivalue1) return 1.0;
     else return 0.0;
@@ -2496,7 +2517,8 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       strcmp(word,"ramp") && strcmp(word,"stagger") &&
       strcmp(word,"logfreq") && strcmp(word,"stride") &&
       strcmp(word,"vdisplace") &&
-      strcmp(word,"swiggle") && strcmp(word,"cwiggle"))
+      strcmp(word,"swiggle") && strcmp(word,"cwiggle") &&
+      strcmp(word,"randomseed"))
     return 0;
 
   // parse contents for arg1,arg2,arg3 separated by commas
@@ -2819,6 +2841,12 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       double value = value1 + value2*(1.0-cos(omega*delta*update->dt));
       argstack[nargstack++] = value;
     }
+
+  } else if (strcmp(word,"randomseed") == 0) {
+    if (narg != 1)
+      error->all(FLERR,"Invalid math function in variable formula");
+    if (tree) newtree->type = RANDOMSEED;
+    else argstack[nargstack++] = random_seed();
   }
 
   delete [] arg1;
@@ -3929,6 +3957,18 @@ unsigned int Variable::data_mask(char *str)
   }
 
   return datamask;
+}
+
+
+/* ----------------------------------------------------------------------
+   generates a randim prime number between 10'000 and INT_MAX
+------------------------------------------------------------------------- */
+int Variable::random_seed(){
+  int seed = 1;
+
+  printf("random seed generated: %d\n", seed);
+
+  return seed;
 }
 
 /* ----------------------------------------------------------------------
