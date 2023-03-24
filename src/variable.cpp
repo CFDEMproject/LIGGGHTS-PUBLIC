@@ -2115,11 +2115,8 @@ double Variable::collapse_tree(Tree *tree)
   }
 
   if (tree->type == RANDOMSEED) {
-    arg1 = collapse_tree(tree->left);
-    if (tree->left->type != VALUE || arg1 != 0){
-      error->one(FLERR,"The argument of randomseed() must be 0");
-    }
-
+    // parser does not allow functions with 0 arguments
+    // the value of the argument does not matter in this case
     tree->type = VALUE;
     tree->value = random_seed();
     return tree->value;
@@ -2388,10 +2385,6 @@ double Variable::eval_tree(Tree *tree, int i)
   }
 
   if (tree->type == RANDOMSEED){
-    arg1 = eval_tree(tree->left,i);
-    if (arg1 != 0.0)
-      error->one(FLERR,"The argument of randomseed() must be 0");
-
     return random_seed();
   }
 
@@ -2850,7 +2843,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
 
   } else if (strcmp(word,"randomseed") == 0) {
     if (narg != 1)
-      error->all(FLERR,"Invalid math function in variable formula");
+      error->all(FLERR,"randomseed() must be called whith 1 argument");
     if (tree) newtree->type = RANDOMSEED;
     else argstack[nargstack++] = random_seed();
   }
