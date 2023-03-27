@@ -2840,7 +2840,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
 
   } else if (strcmp(word,"randomseed") == 0) {
     if (narg != 1)
-      error->all(FLERR,"randomseed() must be called whith 1 argument");
+      error->all(FLERR,"randomseed() must be called with 1 argument");
     if (tree) newtree->type = RANDOMSEED;
     else argstack[nargstack++] = random_seed();
   }
