@@ -41,6 +41,8 @@
     DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
     certain rights in this software.  This software is distributed under
     the GNU General Public License.
+
+    Tóth János (MATE, Gödöllő)
 ------------------------------------------------------------------------- */
 
 #include <cmath>
@@ -70,8 +72,6 @@
 #include "error.h"
 #include "force.h"
 #include "math_extra_liggghts.h"
-#include "stdlib.h"
-#include "time.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -141,9 +141,6 @@ Variable::Variable(LAMMPS *lmp) : Pointers(lmp)
   precedence[MULTIPLY] = precedence[DIVIDE] = precedence[MODULO] = 6;
   precedence[CARAT] = 7;
   precedence[UNARY] = precedence[NOT] = 8;
-
-  // NOTE: better random generator for random_seed()?
-  srand(time(NULL));
 }
 
 /* ---------------------------------------------------------------------- */

@@ -41,6 +41,8 @@
     DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
     certain rights in this software.  This software is distributed under
     the GNU General Public License.
+
+    Tóth János (MATE, Gödöllő)
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_VARIABLE_H
