@@ -46,7 +46,8 @@ style = {delete} or {index} or {loop} or {world} or {universe} or {uloop} or {st
     math functions = sqrt(x), exp(x), ln(x), log(x), abs(x),
                      sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(y,x),
                      random(x,y,z), normal(x,y,z), ceil(x), floor(x), round(x)
-                     ramp(x,y), stagger(x,y), logfreq(x,y,z), stride(x,y,z), vdisplace(x,y), swiggle(x,y,z), cwiggle(x,y,z)
+                     ramp(x,y), stagger(x,y), logfreq(x,y,z), stride(x,y,z), vdisplace(x,y), swiggle(x,y,z), cwiggle(x,y,z),
+                     randomseed(0)
     group functions = count(group), mass(group), charge(group),
 		      xcm(group,dim), vcm(group,dim), fcm(group,dim),
 		      bound(group,xmin), gyration(group), ke(group),
@@ -552,6 +553,11 @@ the {start} keyword of the "run"_run.html command.  See the
 "run"_run.html command for details of how to do this.  Note that the
 "thermo_style"_thermo_style.html keyword elaplong =
 timestep-startstep.
+
+The randomseed(0) function generates a random prime number between 10000 and
+INT_MAX (2147483647). The output of this function can be used to be the seed of
+particletemplate, particledistribution, etc. The argument of the function is not
+used, it is there because the parser cannot handle functions without arguments.
 
 :line
 
