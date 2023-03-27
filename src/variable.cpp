@@ -3975,7 +3975,7 @@ int Variable::random_seed(){
 
   static const int FIRTS_PRIME = 10007;
   static const int LAST_PRIME = 2147483647;
-  static const int SEED_RANGE = (LAST_PRIME - FIRTS_PRIME);
+  static const int SEED_RANGE = (LAST_PRIME - FIRTS_PRIME) + 1;
 
   if(me == 0){
     while(!MathExtraLiggghts::isPrime(seed)){
