@@ -131,7 +131,7 @@ class Variable : protected Pointers {
   char *find_next_comma(char *);
   void print_tree(Tree *, int);
 
-  int random_seed();
+  int generate_seed(int);
 };
 
 class VarReader : protected Pointers {

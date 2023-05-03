@@ -102,7 +102,7 @@ enum{DONE,ADD,SUBTRACT,MULTIPLY,DIVIDE,CARAT,MODULO,UNARY,
      SQRT,EXP,LN,LOG,ABS,SIN,COS,TAN,ASIN,ACOS,ATAN,ATAN2,
      RANDOM,NORMAL,CEIL,FLOOR,ROUND,RAMP,STAGGER,LOGFREQ,STRIDE,
      VDISPLACE,SWIGGLE,CWIGGLE,GMASK,RMASK,GRMASK,
-     VALUE,ATOMARRAY,TYPEARRAY,INTARRAY,RANDOMSEED};
+     VALUE,ATOMARRAY,TYPEARRAY,INTARRAY,SEED};
 
 // customize by adding a special function
 
@@ -1677,7 +1677,7 @@ double Variable::evaluate(char *str, Tree **tree)
      ramp(x,y),stagger(x,y),logfreq(x,y,z),stride(x,y,z),
      vdisplace(x,y),swiggle(x,y,z),cwiggle(x,y,z),
      gmask(x),rmask(x),grmask(x,y),
-     randomseed()
+     seed(n)
 ---------------------------------------------------------------------- */
 
 double Variable::collapse_tree(Tree *tree)
@@ -2111,11 +2111,14 @@ double Variable::collapse_tree(Tree *tree)
     return tree->value;
   }
 
-  if (tree->type == RANDOMSEED) {
-    // parser does not allow functions with 0 arguments
-    // the value of the argument does not matter in this case
+  if (tree->type == SEED) {
+    int ivalue1 = static_cast<int> (collapse_tree(tree->left));
+
+    if (ivalue1 < 0)
+      error->one(FLERR,"seed() must be called with a non-negative argument (>= 0)");
+
     tree->type = VALUE;
-    tree->value = random_seed();
+    tree->value = generate_seed(ivalue1);
     return tree->value;
   }
 
@@ -2137,7 +2140,7 @@ double Variable::collapse_tree(Tree *tree)
      ramp(x,y),stagger(x,y),logfreq(x,y,z),stride(x,y,z),
      vdisplace(x,y),swiggle(x,y,z),cwiggle(x,y,z),
      gmask(x),rmask(x),grmask(x,y),
-     randomseed()
+     seed(n)
 ---------------------------------------------------------------------- */
 
 double Variable::eval_tree(Tree *tree, int i)
@@ -2381,8 +2384,13 @@ double Variable::eval_tree(Tree *tree, int i)
     return arg;
   }
 
-  if (tree->type == RANDOMSEED){
-    return random_seed();
+  if (tree->type == SEED){
+    int ivalue1 = static_cast<int> (eval_tree(tree->left,i));
+
+    if (ivalue1 < 0)
+      error->one(FLERR,"seed() must be called with a non-negative argument (>= 0)");
+
+    return generate_seed(ivalue1);
   }
 
   if (tree->type == GMASK) {
@@ -2514,7 +2522,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       strcmp(word,"logfreq") && strcmp(word,"stride") &&
       strcmp(word,"vdisplace") &&
       strcmp(word,"swiggle") && strcmp(word,"cwiggle") &&
-      strcmp(word,"randomseed"))
+      strcmp(word,"seed"))
     return 0;
 
   // parse contents for arg1,arg2,arg3 separated by commas
@@ -2838,11 +2846,18 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
       argstack[nargstack++] = value;
     }
 
-  } else if (strcmp(word,"randomseed") == 0) {
+  } else if (strcmp(word,"seed") == 0) {
     if (narg != 1)
-      error->all(FLERR,"randomseed() must be called with 1 argument");
-    if (tree) newtree->type = RANDOMSEED;
-    else argstack[nargstack++] = random_seed();
+      error->all(FLERR,"seed() must be called with 1 argument");
+    if (tree) newtree->type = SEED;
+    else {
+        int ivalue1 = static_cast<int> (value1);
+
+        if(ivalue1 < 0)
+          error->all(FLERR,"seed() must be called with a non-negative argument (>= 0)");
+
+        argstack[nargstack++] = generate_seed(ivalue1);
+    }
   }
 
   delete [] arg1;
@@ -3955,31 +3970,106 @@ unsigned int Variable::data_mask(char *str)
   return datamask;
 }
 
-
 /* ----------------------------------------------------------------------
    generates a random prime number between 10'000 and INT_MAX
-
-   rand() is not the best, a more optimal soultion would be:
-
-      #define FIRTS_PRIME 10007     // first prime greather than 10'000
-      #define LAST_PRIME 2147483647 // last prime less than INT_MAX
-      std::random_device dev;
-      std::mt19937 rng(dev());
-      std::uniform_int_distribution<std::mt19937::result_type> dist(FIRTS_PRIME, LAST_PRIME);
-      seed = dist(rng);
-
-    but it depends on C++11, so the backward compatibility would be lost
+   in a form of 6k +- 1
 ------------------------------------------------------------------------- */
-int Variable::random_seed(){
+static int generate_random_seed(){
+    static const int MIN_K = 1678;       // 6*1678-1 = 10067, prime
+    static const int MAX_K = 357913904;  // 6*357913904-1 = 2147483423, prime
+
+    static const int RANGE_K = MAX_K - MIN_K + 1;
+
+    int p = 0;
+
+    // it will find a prime
+    while(true){
+        int k = (rand() % RANGE_K) + MIN_K;
+        p = 6 * k - 1;
+
+        if(MathExtraLiggghts::isPrime(p)){
+            break;
+        }
+
+        p += 2;
+
+        if(MathExtraLiggghts::isPrime(p)){
+            break;
+        }
+    }
+
+    return p;
+}
+
+/*
+ first 200 prime greater than 10'000:
+ */
+static const int PRIME_TABLE_COUNT = 200;
+static const int PRIME_TABLE[PRIME_TABLE_COUNT] = {
+    10007, 10009, 10037, 10039, 10061, 10067, 10069, 10079, 10091, 10093, 10099,
+    10103, 10111, 10133, 10139, 10141, 10151, 10159, 10163, 10169, 10177, 10181,
+    10193, 10211, 10223, 10243, 10247, 10253, 10259, 10267, 10271, 10273, 10289,
+    10301, 10303, 10313, 10321, 10331, 10333, 10337, 10343, 10357, 10369, 10391,
+    10399, 10427, 10429, 10433, 10453, 10457, 10459, 10463, 10477, 10487, 10499,
+    10501, 10513, 10529, 10531, 10559, 10567, 10589, 10597, 10601, 10607, 10613,
+    10627, 10631, 10639, 10651, 10657, 10663, 10667, 10687, 10691, 10709, 10711,
+    10723, 10729, 10733, 10739, 10753, 10771, 10781, 10789, 10799, 10831, 10837,
+    10847, 10853, 10859, 10861, 10867, 10883, 10889, 10891, 10903, 10909, 10937,
+    10939, 10949, 10957, 10973, 10979, 10987, 10993, 11003, 11027, 11047, 11057,
+    11059, 11069, 11071, 11083, 11087, 11093, 11113, 11117, 11119, 11131, 11149,
+    11159, 11161, 11171, 11173, 11177, 11197, 11213, 11239, 11243, 11251, 11257,
+    11261, 11273, 11279, 11287, 11299, 11311, 11317, 11321, 11329, 11351, 11353,
+    11369, 11383, 11393, 11399, 11411, 11423, 11437, 11443, 11447, 11467, 11471,
+    11483, 11489, 11491, 11497, 11503, 11519, 11527, 11549, 11551, 11579, 11587,
+    11593, 11597, 11617, 11621, 11633, 11657, 11677, 11681, 11689, 11699, 11701,
+    11717, 11719, 11731, 11743, 11777, 11779, 11783, 11789, 11801, 11807, 11813,
+    11821, 11827, 11831, 11833, 11839, 11863, 11867, 11887, 11897, 11903, 11909,
+    11923, 11927
+};
+
+static int generate_nth_prime_impl(int n){
+    int p = PRIME_TABLE[PRIME_TABLE_COUNT - 1];
+    n -= PRIME_TABLE_COUNT;
+
+    while(n > 0){
+        p += 2;
+
+        if(MathExtraLiggghts::isPrime(p)){
+            n -= 1;
+        }
+    }
+
+    return p;
+}
+
+/* ----------------------------------------------------------------------
+   gives the n-th prime number between 10'000 and INT_MAX
+
+   n    p
+   1    10007
+   2    10009
+   3    10037
+   ...
+------------------------------------------------------------------------- */
+static int generate_nth_prime(int n){
+  // fast
+  if(n <= PRIME_TABLE_COUNT){
+      return PRIME_TABLE[n-1];
+  // small
+  } else {
+      return generate_nth_prime_impl(n);
+  }
+}
+
+int Variable::generate_seed(int n){
+
   int seed = 0;
 
-  static const int FIRTS_PRIME = 10007;
-  static const int LAST_PRIME = 2147483647;
-  static const int SEED_RANGE = (LAST_PRIME - FIRTS_PRIME) + 1;
-
   if(me == 0){
-    while(!MathExtraLiggghts::isPrime(seed)){
-      seed = (rand() % SEED_RANGE) + FIRTS_PRIME;
+    if (n == 0){
+      seed = generate_random_seed();
+    } else {
+      seed = generate_nth_prime(n);
     }
   }
 
