@@ -681,7 +681,7 @@ void InputMeshTri::broadcast_and_add_triangle(
             &&  region->match(&triangle_data[3])
             &&  region->match(&triangle_data[6])))
         {
-            addTriangle(mesh, &triangle_data[0], &triangle_data[3], &triangle_data[6], *count); \
+            addTriangle(mesh, &triangle_data[0], &triangle_data[3], &triangle_data[6], *count);
         }
     }
 }
@@ -704,10 +704,12 @@ void InputMeshTri::generate_box(const GeneratorParameters * params,
         xsize = params->dvalues[0] / 2.0;
         ysize = params->dvalues[1] / 2.0;
         zsize = params->dvalues[2] / 2.0;
-    }
 
-    VERIFY(num_of_facets > 0);
-    VERIFY(xsize > 0 && ysize > 0 && zsize > 0);
+        VERIFY(num_of_facets > 0);
+        VERIFY(xsize > 0);
+        VERIFY(ysize > 0);
+        VERIFY(zsize > 0);
+    }
 
     // communicate number of triangles
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
@@ -807,10 +809,11 @@ void InputMeshTri::generate_cylinder(const GeneratorParameters * params, class T
 
         radius = params->dvalues[0];
         zsize = params->dvalues[1] / 2.0;
-    }
 
-    VERIFY(nsegments > 0);
-    VERIFY(radius > 0 && zsize > 0);
+        VERIFY(nsegments > 0);
+        VERIFY(radius > 0);
+        VERIFY(zsize > 0);
+    }
 
     // communicate number of triangles
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
@@ -892,10 +895,13 @@ void InputMeshTri::generate_pipe(const GeneratorParameters * params, class TriMe
         inner_radius = params->dvalues[0];
         outer_radius = params->dvalues[1];
         zsize = params->dvalues[2] / 2.0;
-    }
 
-    VERIFY(nsegments > 0);
-    VERIFY(inner_radius > 0 && outer_radius && zsize > 0);
+        VERIFY(nsegments > 0);
+        VERIFY(inner_radius > 0);
+        VERIFY(outer_radius > 0);
+        VERIFY(outer_radius > inner_radius);
+        VERIFY(zsize > 0);
+    }
 
     // communicate number of triangles
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
@@ -1020,10 +1026,10 @@ void InputMeshTri::generate_disk(const GeneratorParameters * params, class TriMe
         nsegments = params->ivalues[0];
         num_of_facets = nsegments;
         radius = params->dvalues[0];
-    }
 
-    VERIFY(nsegments > 0);
-    VERIFY(radius > 0);
+        VERIFY(nsegments > 0);
+        VERIFY(radius > 0);
+    }
 
     // communicate number of triangles
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);
@@ -1072,9 +1078,9 @@ void InputMeshTri::generate_plane(const GeneratorParameters * params, class TriM
     if (me == 0) {
         num_of_facets = 2;
         size = params->dvalues[0] / 2.0;
-    }
 
-    VERIFY(size > 0);
+        VERIFY(size > 0);
+    }
 
     // communicate number of triangles
     MPI_Bcast(&num_of_facets, 1, MPI_INT, 0, world);

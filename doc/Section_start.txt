@@ -673,10 +673,6 @@ In order to compile LIGGGHTS(R)-PUBLIC type:
 
 NOTE: The ccmake program can help to fine-tune the available cmake flags.
 
-NOTE: If the build fails with the "fatal error: vtkSmartPointer.h: No such file or directory" or
-similar vtk related error try to use the MANUAL_VTK_INCLUDE_DIR cmake flag, e.g.:
-MANUAL_VTK_INCLUDE_DIR=/usr/include/vtk-9.1 cmake ..
-
 [Exmaple]
 
 Example installation on a HPC running CentOS 7:
@@ -689,17 +685,17 @@ Example installation on a HPC running CentOS 7:
   cd vtk
   mkdir build install
   cd build
-  CC=mpicc CXX=mpic++ cmake
-       -DBUILD_TESTING=OFF
-       -DCMAKE_BUILD_TYPE=Release
-       -DModule_vtkIOMPIParallel=ON
-       -DVTK_Group_MPI=ON
-       -DVTK_Group_Rendering=OFF
-       -DVTK_RENDERING_BACKEND=None
-       -DVTK_USE_X=OFF
-       -DModule_vtkIOMPIImage=ON
-       -DModule_vtkParallelMPI=ON
-       -DCMAKE_INSTALL_PREFIX=../install
+  CC=mpicc CXX=mpic++ cmake \\   
+       -DBUILD_TESTING=OFF \\   
+       -DCMAKE_BUILD_TYPE=Release \\   
+       -DModule_vtkIOMPIParallel=ON \\   
+       -DVTK_Group_MPI=ON \\   
+       -DVTK_Group_Rendering=OFF \\   
+       -DVTK_RENDERING_BACKEND=None \\   
+       -DVTK_USE_X=OFF \\   
+       -DModule_vtkIOMPIImage=ON \\   
+       -DModule_vtkParallelMPI=ON \\   
+       -DCMAKE_INSTALL_PREFIX=../install \\   
        ..
   make install -j8
   # the following line should be added to $HOME/.bashrc
@@ -710,9 +706,9 @@ Example installation on a HPC running CentOS 7:
   cd LIGGGHTS-PUBLIC
   mkdir build install
   cd build
-  CC=mpicc CXX=mpic++ VTK_DIR=$HOME/vtk/install cmake
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_INSTALL_PREFIX=../install
+  CC=mpicc CXX=mpic++ VTK_DIR=$HOME/vtk/install cmake \\   
+    -DCMAKE_BUILD_TYPE=Release \\   
+    -DCMAKE_INSTALL_PREFIX=../install \\   
     ../src
   make install -j8 :pre
 
@@ -720,7 +716,6 @@ Example installation on a HPC running CentOS 7:
 
 The following cmake flags can be used (the default values are shown as well):
 
-- MANUAL_VTK_INCLUDE_DIR:STRING=""
 - DISABLE_ALL:BOOL=OFF
 - ENABLE_ALL:BOOL=OFF
 - ENABLE_BIGBIG:BOOL=OFF
