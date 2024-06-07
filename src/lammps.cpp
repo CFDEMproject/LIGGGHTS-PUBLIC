@@ -47,6 +47,8 @@
     DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
     certain rights in this software.  This software is distributed under
     the GNU General Public License.
+
+    Tóth János (MATE, Gödöllő)
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
@@ -85,6 +87,9 @@
 #include "memory.h"
 #include "error.h"
 #include "granular_styles.h"
+
+#include <stdlib.h>
+#include <time.h>
 
 using namespace LAMMPS_NS;
 
@@ -558,6 +563,12 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
         sprintf(cmd,"write_data %s tag_offset %d\n",dfile,tag_offset);
     input->one(cmd);
     error->done();
+  }
+
+  // used in Variable::random_seed()
+  if(me == 0){
+    // NOTE: better random generator for random_seed()?
+    srand(time(NULL));
   }
 }
 
