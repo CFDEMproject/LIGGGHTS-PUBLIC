@@ -1427,7 +1427,7 @@ processors in all partitions must equal P.  Thus the command
 processors.
 
 To run multiple independent simulatoins from one input script, using
-multiple partitions, see "Section_howto 4"_Section_howto.html#howto_4
+multiple partitions, see "Section_howto 3"_Section_howto.html#howto_3
 of the manual.  World- and universe-style "variables"_variable.html
 are useful in this context.
 
