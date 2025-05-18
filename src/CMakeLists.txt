@@ -84,6 +84,8 @@ OPTION(ENABLE_PNG    "Use libpng"   ${DEFAULT_OFF})
 OPTION(ENABLE_FFMPEG "Use ffmpeg"   ${DEFAULT_OFF})
 OPTION(ENABLE_GZIP   "Use gzip"     ${DEFAULT_OFF})
 
+OPTION(ENABLE_VORONOI "Enable VORONOI package" ${DEFAULT_OFF})
+
 OPTION(ENABLE_SQ  "Use Superquadrics" ${DEFAULT_OFF})
 
 OPTION(ENABLE_SMALLBIG   "Use of 4-byte (small) vs 8-byte (big) integers."        ON)
@@ -179,6 +181,9 @@ ENDIF()
 #=======================================
 # based on: https://github.com/schrummy14/LIGGGHTS_Flexible_Fibers/blob/master/src/WINDOWS/CMake_patch.zip
 
+IF(ENABLE_VORONOI)
+  ADD_STYLE(compute "${CMAKE_CURRENT_SOURCE_DIR}/VORONOI/compute_voronoi_atom.h")
+ENDIF()
 SCAN_STYLES()
 GENERATE_STYLES()
 
@@ -309,10 +314,38 @@ GET_SUBDIRS(dirList CMakeLists.txt)
 FOREACH(dir ${dirList})
   ADD_SUBDIRECTORY(${dir})
 ENDFOREACH()
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
+
+#=======================================
+# VORONOI package support
+IF(ENABLE_VORONOI)
+  FIND_PATH(VORO_INCLUDE_DIR NAMES voro++.hh voro++/voro++.hh)
+  FIND_LIBRARY(VORO_LIBRARY NAMES voro++)
+
+  IF(VORO_INCLUDE_DIR AND VORO_LIBRARY)
+    MESSAGE(STATUS "Found Voro++: ${VORO_LIBRARY}, includes: ${VORO_INCLUDE_DIR}")
+    SET(VORONOI_SOURCES VORONOI/compute_voronoi_atom.cpp)
+    SET(VORONOI_HEADERS VORONOI/compute_voronoi_atom.h)
+    SET(EXTRA_SOURCES ${VORONOI_SOURCES})
+    SET(EXTRA_HEADERS ${VORONOI_HEADERS})
+    INCLUDE_DIRECTORIES(${VORO_INCLUDE_DIR})
+    SET(VORONOI_LIBS ${VORO_LIBRARY})
+    SET(ENABLED_OPTIONS "${ENABLED_OPTIONS} VORONOI")
+  ELSE()
+    MESSAGE(FATAL_ERROR "Voro++ library or include directory not found! Please install Voro++ and set CMAKE_PREFIX_PATH or VORO_INCLUDE_DIR/VORO_LIBRARY.")
+  ENDIF()
+ELSE()
+  SET(EXTRA_SOURCES)
+  SET(EXTRA_HEADERS)
+  SET(VORONOI_LIBS)
+  SET(DISABLED_OPTIONS "${DISABLED_OPTIONS} VORONOI")
+ENDIF()
 #=======================================
 FILE(GLOB SOURCES *.cpp)
 FILE(GLOB HEADERS *.h)
+LIST(APPEND SOURCES ${EXTRA_SOURCES})
+LIST(APPEND HEADERS ${EXTRA_HEADERS})
 
 ADD_LIBRARY(liggghts_obj OBJECT ${SOURCES})
 
@@ -326,6 +359,13 @@ SET_PROPERTY(TARGET liggghts_shared PROPERTY PUBLIC_HEADER ${HEADERS})
 
 ADD_EXECUTABLE(liggghts_bin $<TARGET_OBJECTS:liggghts_obj>)
 SET_TARGET_PROPERTIES(liggghts_bin PROPERTIES OUTPUT_NAME liggghts)
+
+# After ADD_EXECUTABLE and ADD_LIBRARY, link Voro++ if needed
+IF(ENABLE_VORONOI)
+  TARGET_LINK_LIBRARIES(liggghts_static PUBLIC ${VORONOI_LIBS})
+  TARGET_LINK_LIBRARIES(liggghts_shared PUBLIC ${VORONOI_LIBS})
+  TARGET_LINK_LIBRARIES(liggghts_bin PUBLIC ${VORONOI_LIBS})
+ENDIF()
 
 #=======================================
 IF(ENABLE_MPI)
