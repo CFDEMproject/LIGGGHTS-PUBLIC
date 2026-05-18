@@ -53,10 +53,12 @@ namespace LAMMPS_NS {
 class Finish : protected Pointers {
  public:
   Finish(class LAMMPS *);
+  virtual ~Finish();
   void end(int);
 
  private:
   void stats(int, double *, double *, double *, double *, int, int *);
+  class DcsMessages &dcs_messages_;
 };
 
 }
