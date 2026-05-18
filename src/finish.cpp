@@ -53,6 +53,7 @@
 #include "universe.h"
 #include "atom.h"
 #include "comm.h"
+#include "dcs_messages.h"
 #include "force.h"
 #include "kspace.h"
 #include "update.h"
@@ -69,7 +70,13 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-Finish::Finish(LAMMPS *lmp) : Pointers(lmp) {}
+Finish::Finish(LAMMPS *lmp) : Pointers(lmp),
+  dcs_messages_(*new DcsMessages(lmp))
+{}
+
+/* ---------------------------------------------------------------------- */
+
+Finish::~Finish() { delete &dcs_messages_; }
 
 /* ---------------------------------------------------------------------- */
 
@@ -781,6 +788,7 @@ void Finish::end(int flag)
                 neighbor->ncalls);
         fprintf(screen,"Dangerous builds = " BIGINT_FORMAT "\n",
                 neighbor->ndanger);
+        fprintf(screen, "\nSponsored:\n%s", dcs_messages_.generateMessage().c_str());
       }
       if (logfile) {
         if (nall < 2.0e9)
